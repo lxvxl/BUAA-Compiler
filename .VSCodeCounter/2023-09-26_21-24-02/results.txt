@@ -1,0 +1,141 @@
+Date : 2023-09-26 21:24:02
+Directory : c:\Users\zj\Desktop\编译实验\Compiler
+Total : 96 files,  2508 codes, 74 comments, 297 blanks, all 2879 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Java     |         90 |      2,333 |         74 |        288 |      2,695 |
+| XML      |          5 |        165 |          0 |          0 |        165 |
+| Markdown |          1 |         10 |          0 |          9 |         19 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                            | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                               |         96 |      2,508 |         74 |        297 |      2,879 |
+| . (Files)                                                                       |          2 |         21 |          0 |          9 |         30 |
+| .idea                                                                           |          4 |        154 |          0 |          0 |        154 |
+| bin                                                                             |         42 |        786 |          4 |          0 |        790 |
+| bin (Files)                                                                     |          1 |         27 |          0 |          0 |         27 |
+| bin\error                                                                       |          2 |         14 |          0 |          0 |         14 |
+| bin\lexical                                                                     |          5 |        127 |          4 |          0 |        131 |
+| bin\syntaxAnalyser                                                              |         34 |        618 |          0 |          0 |        618 |
+| bin\syntaxAnalyser (Files)                                                      |          1 |          3 |          0 |          0 |          3 |
+| bin\syntaxAnalyser\nodes                                                        |         33 |        615 |          0 |          0 |        615 |
+| out                                                                             |          6 |        179 |          0 |          0 |        179 |
+| out\production                                                                  |          6 |        179 |          0 |          0 |        179 |
+| out\production\Compiler                                                         |          6 |        179 |          0 |          0 |        179 |
+| src                                                                             |         42 |      1,368 |         70 |        288 |      1,726 |
+| src (Files)                                                                     |          1 |         16 |          1 |          3 |         20 |
+| src\error                                                                       |          2 |          9 |          0 |          5 |         14 |
+| src\lexical                                                                     |          5 |        350 |         19 |         35 |        404 |
+| src\syntaxAnalyser                                                              |         34 |        993 |         50 |        245 |      1,288 |
+| src\syntaxAnalyser (Files)                                                      |          1 |          3 |          0 |          3 |          6 |
+| src\syntaxAnalyser\nodes                                                        |         33 |        990 |         50 |        242 |      1,282 |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                        | language | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\zj\Desktop\编译实验\Compiler\.idea\checkstyle-idea.xml                     | XML      |         16 |          0 |          0 |         16 |
+| c:\Users\zj\Desktop\编译实验\Compiler\.idea\misc.xml                                | XML      |          6 |          0 |          0 |          6 |
+| c:\Users\zj\Desktop\编译实验\Compiler\.idea\modules.xml                             | XML      |          8 |          0 |          0 |          8 |
+| c:\Users\zj\Desktop\编译实验\Compiler\.idea\uiDesigner.xml                          | XML      |        124 |          0 |          0 |        124 |
+| c:\Users\zj\Desktop\编译实验\Compiler\Compiler.iml                                  | XML      |         11 |          0 |          0 |         11 |
+| c:\Users\zj\Desktop\编译实验\Compiler\README.md                                     | Markdown |         10 |          0 |          9 |         19 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\Compiler.class                            | Java     |         27 |          0 |          0 |         27 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\error\ErrorHandler.class                  | Java     |          9 |          0 |          0 |          9 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\error\ParsingFailedException.class        | Java     |          5 |          0 |          0 |          5 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\lexical\CategoryCode.class                | Java     |         21 |          0 |          0 |         21 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\lexical\LexicalAnalyser.class             | Java     |         47 |          0 |          0 |         47 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\lexical\LexicalManager.class              | Java     |         24 |          4 |          0 |         28 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\lexical\Reader.class                      | Java     |         20 |          0 |          0 |         20 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\lexical\Symbol.class                      | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\TreeNode.class             | Java     |          3 |          0 |          0 |          3 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\AddExp.class         | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\BType.class          | Java     |         20 |          0 |          0 |         20 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Block.class          | Java     |         16 |          0 |          0 |         16 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\BlockItem.class      | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\CompUnit.class       | Java     |         25 |          0 |          0 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Cond.class           | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\ConstDecl.class      | Java     |         26 |          0 |          0 |         26 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\ConstDef.class       | Java     |         27 |          0 |          0 |         27 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\ConstExp.class       | Java     |         16 |          0 |          0 |         16 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\ConstInitVal.class   | Java     |         25 |          0 |          0 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Decl.class           | Java     |         22 |          0 |          0 |         22 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\EqExp.class          | Java     |         16 |          0 |          0 |         16 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Exp.class            | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\ForStmt.class        | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\FuncDef.class        | Java     |         23 |          0 |          0 |         23 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\FuncFParam.class     | Java     |         25 |          0 |          0 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\FuncFParams.class    | Java     |         24 |          0 |          0 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\FuncRParams.class    | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\FuncType.class       | Java     |         20 |          0 |          0 |         20 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\InitVal.class        | Java     |         25 |          0 |          0 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\LAndExp.class        | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\LOrExp.class         | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\LVal.class           | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\MainFuncDef.class    | Java     |         21 |          0 |          0 |         21 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\MulExp.class         | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Number.class         | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\PrimaryExp.class     | Java     |          7 |          0 |          0 |          7 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\RelExp.class         | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\Stmt.class           | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\UnaryExp.class       | Java     |         16 |          0 |          0 |         16 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\UnaryOp.class        | Java     |         15 |          0 |          0 |         15 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\VarDecl.class        | Java     |         26 |          0 |          0 |         26 |
+| c:\Users\zj\Desktop\编译实验\Compiler\bin\syntaxAnalyser\nodes\VarDef.class         | Java     |         25 |          0 |          0 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\CategoryCode.class    | Java     |         24 |          0 |          0 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\Compiler.class        | Java     |         26 |          0 |          0 |         26 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\ErrorHandler.class    | Java     |          8 |          0 |          0 |          8 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\LexicalAnalyser.class | Java     |         81 |          0 |          0 |         81 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\Reader.class          | Java     |         26 |          0 |          0 |         26 |
+| c:\Users\zj\Desktop\编译实验\Compiler\out\production\Compiler\Symbol.class          | Java     |         14 |          0 |          0 |         14 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\Compiler.java                             | Java     |         16 |          1 |          3 |         20 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\error\ErrorHandler.java                   | Java     |          6 |          0 |          2 |          8 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\error\ParsingFailedException.java         | Java     |          3 |          0 |          3 |          6 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\lexical\CategoryCode.java                 | Java     |         42 |          0 |          2 |         44 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\lexical\LexicalAnalyser.java              | Java     |        205 |          6 |         11 |        222 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\lexical\LexicalManager.java               | Java     |         55 |         13 |         12 |         80 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\lexical\Reader.java                       | Java     |         40 |          0 |          7 |         47 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\lexical\Symbol.java                       | Java     |          8 |          0 |          3 |         11 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\TreeNode.java              | Java     |          3 |          0 |          3 |          6 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\AddExp.java          | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\BType.java           | Java     |         21 |          0 |          6 |         27 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Block.java           | Java     |         29 |          1 |          8 |         38 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\BlockItem.java       | Java     |         27 |          1 |          9 |         37 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\CompUnit.java        | Java     |         39 |          0 |          7 |         46 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Cond.java            | Java     |         17 |          1 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\ConstDecl.java       | Java     |         34 |          1 |          7 |         42 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\ConstDef.java        | Java     |         33 |          1 |          8 |         42 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\ConstExp.java        | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\ConstInitVal.java    | Java     |         39 |          2 |         11 |         52 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Decl.java            | Java     |         30 |          1 |          8 |         39 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\EqExp.java           | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Exp.java             | Java     |         18 |          1 |          6 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\ForStmt.java         | Java     |         27 |          1 |          7 |         35 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\FuncDef.java         | Java     |         32 |          1 |          8 |         41 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\FuncFParam.java      | Java     |         35 |          1 |          7 |         43 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\FuncFParams.java     | Java     |         30 |          1 |          8 |         39 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\FuncRParams.java     | Java     |         29 |          1 |          7 |         37 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\FuncType.java        | Java     |         25 |          1 |          9 |         35 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\InitVal.java         | Java     |         42 |          2 |         10 |         54 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\LAndExp.java         | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\LOrExp.java          | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\LVal.java            | Java     |         30 |          1 |          8 |         39 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\MainFuncDef.java     | Java     |         30 |          1 |          8 |         39 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\MulExp.java          | Java     |         18 |          1 |          6 |         25 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Number.java          | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\PrimaryExp.java      | Java     |         38 |          1 |          7 |         46 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\RelExp.java          | Java     |         18 |          0 |          6 |         24 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\Stmt.java            | Java     |        110 |         22 |         10 |        142 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\UnaryExp.java        | Java     |         41 |          4 |          7 |         52 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\UnaryOp.java         | Java     |         24 |          1 |          6 |         31 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\VarDecl.java         | Java     |         32 |          1 |          8 |         41 |
+| c:\Users\zj\Desktop\编译实验\Compiler\src\syntaxAnalyser\nodes\VarDef.java          | Java     |         34 |          1 |          8 |         43 |
+| Total                                                                           |          |      2,508 |         74 |        297 |      2,879 |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
