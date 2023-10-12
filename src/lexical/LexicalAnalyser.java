@@ -87,6 +87,20 @@ public class LexicalAnalyser {
                 } else if (c == '\0' || c == '\n') {
                     ErrorHandler.putError(lineNum, "未匹配的\"");
                     return null;
+                } else if (c == '%') {
+                    char next = reader.getChar();
+                    reader.unGetChar();
+                    if (next != 'd') {
+                        ErrorHandler.putError(lineNum, 'a');
+                    }
+                } else if (c == '\\') {
+                    char next = reader.getChar();
+                    reader.unGetChar();
+                    if (next != 'n') {
+                        ErrorHandler.putError(lineNum, 'a');
+                    }
+                } else if (!(c == 32 || c == 33 || c >= 40 && c <= 126)) {
+                    ErrorHandler.putError(lineNum, 'a');
                 }
             }
             return new Symbol(token.toString(), CategoryCode.STRCON, lineNum);

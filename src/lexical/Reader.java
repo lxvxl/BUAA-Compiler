@@ -39,8 +39,4 @@ public class Reader {
             line--;
         }
     }
-
-    public int getLine() {
-        return line;
-    }
 }

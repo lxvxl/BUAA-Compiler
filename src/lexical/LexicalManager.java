@@ -18,7 +18,7 @@ public class LexicalManager {
 
     /**
      * 获取下一个symbol，并将指针指向下一个
-     * @return 返回当前symbol。若没有更多symbol，则返回null
+     * @return 返回当前symbol。若没有更多symbol，则返回End
      */
     public Symbol getSymbol() {
         if (p < symbols.size()) {
@@ -41,7 +41,7 @@ public class LexicalManager {
     public Symbol getSymbolWithCategory(CategoryCode code) throws ParsingFailedException {
         if (checkSymbol().type() != code) {
             throw new ParsingFailedException(String.format("尝试获得类型为%s的token，但是当前token为%s",
-                    code.name(), getSymbol().toString()));
+                    code.name(), checkSymbol().toString()));
         }
         return getSymbol();
     }

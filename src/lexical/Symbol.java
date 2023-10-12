@@ -1,6 +1,6 @@
 package lexical;
 
-import syntaxAnalyser.TreeNode;
+import parser.TreeNode;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,8 +13,5 @@ public record Symbol(String symbol, CategoryCode type, int lineNum) implements T
 
     @Override
     public void compile(BufferedWriter writer) {
-        try {
-            writer.write(this.toString() + '\n');
-        } catch (IOException ignored) {}
     }
 }

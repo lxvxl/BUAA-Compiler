@@ -10,7 +10,7 @@ public class Logger {
     public static void open(){
         try {
             open = true;
-            File outFile = new File("log");
+            File outFile = new File("log.txt");
             if (!outFile.exists()) {
                 outFile.createNewFile();
             }
