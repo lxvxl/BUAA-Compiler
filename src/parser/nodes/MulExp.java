@@ -85,6 +85,9 @@ public class MulExp implements TreeNode {
         } else {
             int dim1 = ((MulExp)children.get(0)).checkDim();
             int dim2 = ((UnaryExp)children.get(2)).checkDim();
+            if (dim1 == -2 || dim2 == -2) {
+                return -2;
+            }
             if (dim2 != dim1) {
                 return -1;
             }

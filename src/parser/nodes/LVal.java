@@ -71,12 +71,11 @@ public class LVal implements TreeNode {
     }
 
     /**
-     * @return 若不可变，返回lineNum，否则返回0
+     * @return 若不可变且符号已定义，返回lineNum，否则返回0
      */
     public int changeable() {
         Var ident = (Var) SymbolTable.searchIdent(((Symbol)children.get(0)).symbol());
         if (ident == null) {
-            ErrorHandler.putError(((Symbol)children.get(0)).lineNum(), 'c');
             return 0;
         }
         return ident.isConst() ? ((Symbol)children.get(0)).lineNum() : 0;

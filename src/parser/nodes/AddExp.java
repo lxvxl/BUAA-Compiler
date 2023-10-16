@@ -85,7 +85,9 @@ public class AddExp implements TreeNode {
         } else {
             int dim1 = ((AddExp)children.get(0)).checkDim();
             int dim2 = ((MulExp)children.get(2)).checkDim();
-            if (dim2 != dim1) {
+            if (dim1 == -2 || dim2 == -2) {
+                return -2;
+            } else if (dim2 != dim1) {
                 return -1;
             }
             return dim1;

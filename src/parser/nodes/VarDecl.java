@@ -34,6 +34,7 @@ public class VarDecl implements TreeNode {
                 children.add(VarDef.parse(lm));
             }
             //如果是右括号，说明不应当使用VarDecl的方式进行解析，而应当使用函数的方式进行解析
+            //TODO 这里是为什么？想删掉，但是不敢删
             if (lm.checkSymbol().type() == CategoryCode.LPARENT) {
                 lm.getSymbolWithCategory(CategoryCode.SEMICN);
             }

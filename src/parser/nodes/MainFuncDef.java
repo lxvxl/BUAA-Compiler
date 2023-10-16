@@ -9,6 +9,7 @@ import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -34,7 +35,8 @@ public class MainFuncDef implements TreeNode {
             children.add(lm.getSymbolWithCategory(CategoryCode.INTTK));
             children.add(lm.getSymbolWithCategory(CategoryCode.MAINTK));
             children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
-            children.add(lm.getSymbolWithCategory(CategoryCode.RPARENT));
+            SyntaxChecker.addRparentWithCheck(children, lm);
+            //children.add(lm.getSymbolWithCategory(CategoryCode.RPARENT));
             children.add(Block.parse(lm));
 
             lm.revokeMark();

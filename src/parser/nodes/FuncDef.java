@@ -80,7 +80,7 @@ public class FuncDef implements TreeNode {
         SyntaxChecker.funcOut();
 
         //检查返回值相关错误
-        //TODO return判定应该在void的全局内，以及函数调用不能将const arr当作参数类型
+        //TODO 函数调用不能将const arr当作参数类型
         Block block = (Block)children.get(children.size() - 1);
         if (returnType.equals("int") && !block.containReturn()) {
             ErrorHandler.putError(((Symbol)block.getChildren().get(block.getChildren().size() - 1)).lineNum(), 'g');
