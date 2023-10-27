@@ -1,5 +1,7 @@
 package ident;
 
+import ident.idents.Var;
+import intermediateCode.CodeGenerator;
 import logger.Logger;
 
 import java.util.HashMap;
@@ -16,6 +18,10 @@ public class SymbolTable {
     public static void addIdent(AbstractIdent ident) throws RepeatDefException {
         if (tableStack.getFirst().containsKey(ident.getName())) {
             throw new RepeatDefException();
+        }
+        if (tableStack.size() == 1 && ident instanceof Var var) {
+            var.setGlobal();
+            var.setAddrReg('@' + ident.getName());
         }
         tableStack.getFirst().put(ident.getName(), ident);
         Logger.write(ident.toString());

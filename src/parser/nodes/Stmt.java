@@ -3,6 +3,10 @@ package parser.nodes;
 import error.ErrorHandler;
 import error.ParsingFailedException;
 import ident.SymbolTable;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.PutCharInst;
+import intermediateCode.instructions.PutIntInst;
+import intermediateCode.instructions.RetInst;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -13,6 +17,7 @@ import parser.TreeNode;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Stmt implements TreeNode {
     private final List<TreeNode> children;
@@ -30,7 +35,7 @@ public class Stmt implements TreeNode {
     //| 'continue' ';'
     //| 'return' [Exp] ';'
     //| LVal '=' 'getint''('')'';'
-    //| 'printf''('FormatString{','Exp}')'';'
+    //| 'printf' '(' FormatString {','Exp} ')' ';'
     public static Stmt parse(LexicalManager lm) throws ParsingFailedException {
         List<TreeNode> children = new ArrayList<>();
         lm.mark();
@@ -156,7 +161,7 @@ public class Stmt implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         TreeNode firstChild = children.get(0);
 
         boolean isLoop = false;
@@ -165,10 +170,25 @@ public class Stmt implements TreeNode {
             int line = lVal.changeable();
             if (line > 0) {
                 ErrorHandler.putError(line, 'h');
+                SyntaxChecker.loopOut();
+                return;
             }
+            if (children.get(2) instanceof Exp exp) {
+                //LVal '=' Exp ';'
+                exp.compile();
+                lVal.storeVal(SyntaxChecker.getExpReturnReg());
+            } else {
+                //LVal '=' 'getint''('')'';'
+                lVal.storeVal(CodeGenerator.generateGetInt());
+            }
+        } else if (firstChild instanceof Exp exp) {
+            exp.compile();
+        } else if (firstChild instanceof Block block) {
+            block.compile();
         } else if (firstChild instanceof Symbol firstSymbol) {
             switch (firstSymbol.type()) {
                 case PRINTFTK -> {
+                    //TODO 需要修改的更高效
                     String formatString = ((Symbol) children.get(2)).symbol();
                     int count = 0;
                     for (char c : formatString.toCharArray()) {
@@ -176,8 +196,30 @@ public class Stmt implements TreeNode {
                             count++;
                         }
                     }
-                    if (count != (children.size() - 5) / 2) {
+                    List<String> params = children.stream()
+                            .filter(obj -> obj instanceof Exp)
+                            .map(obj -> {
+                                obj.compile();
+                                return SyntaxChecker.getExpReturnReg();
+                            }).toList();
+                    if (count != params.size()) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'l');
+                    }
+                    int p = 0;
+                    for (int i = 1; i < formatString.length() - 1; i++) {
+                        char c = formatString.charAt(i);
+                        switch (c) {
+                            case '%' -> {
+                                CodeGenerator.addInst(new PutIntInst(params.get(p)));
+                                p++;
+                                i++;
+                            }
+                            case '\\' -> {
+                                CodeGenerator.addInst(new PutCharInst('\n'));
+                                i++;
+                            }
+                            default -> CodeGenerator.addInst(new PutCharInst(c));
+                        }
                     }
                 }
                 case FORTK -> {
@@ -195,13 +237,11 @@ public class Stmt implements TreeNode {
                     if (SyntaxChecker.isReturnValid(children.size() == 3)) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'f');
                     }
+                    children.get(1).compile();
+                    CodeGenerator.addInst(new RetInst(SyntaxChecker.getExpReturnReg()));
                 }
             }
         }
-        for (TreeNode node: children) {
-            node.compile(writer);
-        }
-
         if (isLoop) {
             SyntaxChecker.loopOut();
         }

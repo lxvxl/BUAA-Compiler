@@ -31,6 +31,7 @@ public class LOrExp implements TreeNode {
         children.add(lAndExp);
     }
 
+    //LOrExp → LAndExp | LOrExp '||' LAndExp
     public static LOrExp parse(LexicalManager lm) throws ParsingFailedException {
         List<TreeNode> children = new ArrayList<>();
         lm.mark();
@@ -69,9 +70,9 @@ public class LOrExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
                 
     }

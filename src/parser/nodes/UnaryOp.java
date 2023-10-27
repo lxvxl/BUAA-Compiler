@@ -3,6 +3,7 @@ package parser.nodes;
 import error.ParsingFailedException;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
+import lexical.Symbol;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -31,10 +32,13 @@ public class UnaryOp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
-                
+    }
+
+    public CategoryCode getOp() {
+        return ((Symbol)children.get(0)).type();
     }
 }

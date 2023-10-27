@@ -4,6 +4,7 @@ import error.ParsingFailedException;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class FuncRParams implements TreeNode {
     private final List<TreeNode> children;
+    private static final List<String> params = new ArrayList<>();
 
     private FuncRParams(List<TreeNode> children) {
         this.children = children;
@@ -41,15 +43,14 @@ public class FuncRParams implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
+        params.clear();
         for (TreeNode node: children) {
-            node.compile(writer);
+            if (node instanceof Exp exp) {
+                exp.compile();
+                params.add(SyntaxChecker.getExpReturnReg());
+            }
         }
-        
-    }
-
-    public List<TreeNode> getChildren() {
-        return children;
     }
 
     /**
@@ -62,5 +63,9 @@ public class FuncRParams implements TreeNode {
                 dims.add(((Exp) node).checkDim());
             }
         }
+    }
+
+    public static List<String> getParams() {
+        return new ArrayList<>(params);
     }
 }

@@ -1,14 +1,16 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.AddInst;
+import intermediateCode.instructions.SubInst;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,11 +74,19 @@ public class AddExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
+    public void compile() {
+        children.get(0).compile();
+        String lResult = SyntaxChecker.getExpReturnReg();
+        if (children.size() == 1) {
+            return;
         }
-        
+        children.get(2).compile();
+        String rResult = SyntaxChecker.getExpReturnReg();
+        SyntaxChecker.setExpReturnReg(switch (((Symbol)children.get(1)).type())  {
+            case PLUS -> CodeGenerator.generateAdd(lResult, rResult);
+            case MINU -> CodeGenerator.generateSub(lResult, rResult);
+            default -> throw new IllegalStateException("Unexpected value: " + ((Symbol) children.get(1)).type());
+        });
     }
 
     public int checkDim() {

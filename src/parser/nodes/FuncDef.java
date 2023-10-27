@@ -6,6 +6,7 @@ import ident.RepeatDefException;
 import ident.SymbolTable;
 import ident.idents.Func;
 import ident.idents.Var;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -53,19 +54,11 @@ public class FuncDef implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         //添加函数定义
         String returnType = ((Symbol)((FuncType)children.get(0)).getChildren().get(0)).symbol();
         String name = ((Symbol)children.get(1)).symbol();
         List<Var> params = new ArrayList<>();
-        if (children.get(3) instanceof FuncFParams) {
-            for (TreeNode node : ((FuncFParams) children.get(3)).getChildren()) {
-                if (node instanceof FuncFParam) {
-                    List<TreeNode> paramNodes = ((FuncFParam) node).getChildren();
-                    params.add(new Var(((Symbol)paramNodes.get(1)).symbol(), false, paramNodes.size() / 2 - 1));
-                }
-            }
-        }
 
         try {
             SymbolTable.addIdent(new Func(name, returnType, params));
@@ -74,14 +67,18 @@ public class FuncDef implements TreeNode {
         }
 
         SyntaxChecker.funcIn(returnType);
-        for (TreeNode node: children) {
-            node.compile(writer);
+        CodeGenerator.FuncIn(name);
+        if (children.get(3) instanceof FuncFParams funcFParams) {
+            funcFParams.compile();
+            params.addAll(FuncFParams.getParams());
         }
+
+        Block block = (Block)children.get(children.size() - 1);
+        block.compile();
         SyntaxChecker.funcOut();
 
         //检查返回值相关错误
         //TODO 函数调用不能将const arr当作参数类型
-        Block block = (Block)children.get(children.size() - 1);
         if (returnType.equals("int") && !block.containReturn()) {
             ErrorHandler.putError(((Symbol)block.getChildren().get(block.getChildren().size() - 1)).lineNum(), 'g');
         }

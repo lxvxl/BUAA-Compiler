@@ -4,6 +4,7 @@ import error.ParsingFailedException;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class ConstInitVal implements TreeNode {
     private final List<TreeNode> children;
+    private static final List<String> initVals = new ArrayList<>();
 
     private ConstInitVal(List<TreeNode> children) {
         this.children = children;
@@ -59,11 +61,23 @@ public class ConstInitVal implements TreeNode {
         }
     }
 
+    public static void clearInitVals() {
+        initVals.clear();
+    }
+
+    public static List<String> getInitVals() {
+        return new ArrayList<>(initVals);
+    }
+
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
+    public void compile() {
+        if (children.get(0) instanceof ConstExp constExp) {
+            constExp.compile();
+            initVals.add(SyntaxChecker.getExpReturnReg());
+            return;
         }
-                
+        for (TreeNode node: children) {
+            node.compile();
+        }
     }
 }

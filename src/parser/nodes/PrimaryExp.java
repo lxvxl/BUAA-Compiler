@@ -54,11 +54,14 @@ public class PrimaryExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
+    public void compile() {
+        if (children.size() > 1 && children.get(1) instanceof Exp exp) {
+            exp.compile();
+        } else if (children.get(0) instanceof LVal lVal) {
+            lVal.compile();
+        } else if (children.get(0) instanceof Number number) {
+            number.compile();
         }
-                
     }
 
     public int checkDim() {

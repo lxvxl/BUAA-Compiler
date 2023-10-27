@@ -2,6 +2,7 @@ package parser;
 
 import error.ErrorHandler;
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -11,6 +12,7 @@ import java.util.List;
 public class SyntaxChecker {
     private static int loopDepth = 0;
     private static String funcState = "out"; //out, void, int
+    private static String expReturnReg; //上一个类exp节点计算后结果的存储寄存器
 
     public static void addSemicnWithCheck(List<TreeNode> children, LexicalManager lm){
         try {
@@ -63,4 +65,13 @@ public class SyntaxChecker {
     public static boolean isReturnValid(boolean hasExp) {
         return funcState.equals("void") && hasExp;
     }
+
+    public static String getExpReturnReg() {
+        return expReturnReg;
+    }
+
+    public static void setExpReturnReg(String reg) {
+        expReturnReg = reg;
+    }
+
 }

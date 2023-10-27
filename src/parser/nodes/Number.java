@@ -3,6 +3,8 @@ package parser.nodes;
 import error.ParsingFailedException;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
+import lexical.Symbol;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -24,10 +26,7 @@ public class Number implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
-        }
-                
+    public void compile() {
+        SyntaxChecker.setExpReturnReg(((Symbol)children.get(0)).symbol());
     }
 }

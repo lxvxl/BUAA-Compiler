@@ -35,9 +35,9 @@ public class FuncType implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
         
     }

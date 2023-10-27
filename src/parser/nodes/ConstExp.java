@@ -34,10 +34,7 @@ public class ConstExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
-        }
-                
+    public void compile() {
+        children.get(0).compile();
     }
 }

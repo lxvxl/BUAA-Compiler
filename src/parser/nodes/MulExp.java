@@ -1,10 +1,13 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.*;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -72,11 +75,20 @@ public class MulExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
+    public void compile() {
+        children.get(0).compile();
+        String lResult = SyntaxChecker.getExpReturnReg();
+        if (children.size() == 1) {
+            return;
         }
-                
+        children.get(2).compile();
+        String rResult = SyntaxChecker.getExpReturnReg();
+        SyntaxChecker.setExpReturnReg(switch (((Symbol)children.get(1)).type())  {
+            case MULT -> CodeGenerator.generateMul(lResult, rResult);
+            case DIV -> CodeGenerator.generateDiv(lResult, rResult);
+            case MOD -> CodeGenerator.generateMod(lResult, rResult);
+            default -> throw new IllegalStateException("Unexpected value: " + ((Symbol) children.get(1)).type());
+        });
     }
 
     public int checkDim() {

@@ -47,11 +47,11 @@ public class Block implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         Logger.write("s进入block");
         SymbolTable.blockIn();
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
         SymbolTable.blockOut();
         Logger.write("e离开block");

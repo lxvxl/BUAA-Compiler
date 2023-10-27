@@ -1,9 +1,11 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -13,6 +15,8 @@ import java.util.List;
 
 public class InitVal implements TreeNode {
     private final List<TreeNode> children;
+
+    private static final List<String> initVals = new ArrayList<>();
 
     private InitVal(List<TreeNode> children) {
         this.children = children;
@@ -59,10 +63,22 @@ public class InitVal implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
+    public void compile() {
+        if (children.get(0) instanceof Exp exp) {
+            exp.compile();
+            initVals.add(SyntaxChecker.getExpReturnReg());
+            return;
         }
-                
+        for (TreeNode node: children) {
+            node.compile();
+        }
+    }
+
+    public static void clearInitVals() {
+        initVals.clear();
+    }
+
+    public static List<String> getInitVals() {
+        return new ArrayList<>(initVals);
     }
 }

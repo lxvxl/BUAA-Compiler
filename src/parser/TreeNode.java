@@ -3,5 +3,5 @@ package parser;
 import java.io.BufferedWriter;
 
 public interface TreeNode {
-    public void compile(BufferedWriter writer);
+    public void compile();
 }

@@ -5,6 +5,7 @@ import error.ParsingFailedException;
 import ident.RepeatDefException;
 import ident.SymbolTable;
 import ident.idents.Func;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -50,7 +51,7 @@ public class MainFuncDef implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         try {
             SymbolTable.addIdent(new Func("main", "int", new ArrayList<>()));
         } catch (RepeatDefException ignored) {}
@@ -58,8 +59,9 @@ public class MainFuncDef implements TreeNode {
         if (!block.containReturn()) {
             ErrorHandler.putError(((Symbol)block.getChildren().get(block.getChildren().size() - 1)).lineNum(), 'g');
         }
+        CodeGenerator.FuncIn("main");
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
         
     }

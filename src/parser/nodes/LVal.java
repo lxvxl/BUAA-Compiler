@@ -4,6 +4,11 @@ import error.ErrorHandler;
 import error.ParsingFailedException;
 import ident.SymbolTable;
 import ident.idents.Var;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.AddInst;
+import intermediateCode.instructions.LoadInst;
+import intermediateCode.instructions.MulInst;
+import intermediateCode.instructions.StoreInst;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -11,9 +16,6 @@ import logger.Logger;
 import parser.SyntaxChecker;
 import parser.TreeNode;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,16 +51,81 @@ public class LVal implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         Symbol ident = (Symbol)children.get(0);
-        if (SymbolTable.searchIdent(ident.symbol()) == null) {
+        Var var = (Var) SymbolTable.searchIdent(ident.symbol());
+        if (var == null) {
             ErrorHandler.putError(ident.lineNum(), 'c');
             return;
         }
-        for (TreeNode node: children) {
-            node.compile(writer);
+        String addr = var.getAddrReg();
+        switch (children.size()) {
+            case 1 -> {
+                //若是零维，返回值，否则，返回地址
+                if (var.getDim() > 0) {
+                    SyntaxChecker.setExpReturnReg(addr);
+                } else {
+                    if (var.isConst()) {
+                        SyntaxChecker.setExpReturnReg(var.getInitVal());
+                    } else {
+                        String result = CodeGenerator.generateLoad(addr, "0");
+                        SyntaxChecker.setExpReturnReg(result);
+                    }
+                }
+            }
+            case 4 -> {
+                children.get(2).compile();
+                String loc = SyntaxChecker.getExpReturnReg();
+                //若是一维，返回值，否则，返回地址
+                if (var.getDim() == 1) {
+                    String result = CodeGenerator.generateLoad(addr, loc);
+                    SyntaxChecker.setExpReturnReg(result);
+                } else {
+                    String off = CodeGenerator.generateMul(loc, var.getElementSize());
+                    String finalAddr = CodeGenerator.generateAdd(off, addr);
+                    SyntaxChecker.setExpReturnReg(finalAddr);
+                }
+            }
+            case 7 -> {
+                children.get(2).compile();
+                String loc1 = SyntaxChecker.getExpReturnReg();
+                children.get(5).compile();
+                String loc2 = SyntaxChecker.getExpReturnReg();
+
+                String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
+                String middleAddr = CodeGenerator.generateAdd(addr, off1);
+                //System.out.println(loc2);
+                String result = CodeGenerator.generateLoad(middleAddr, loc2);
+                SyntaxChecker.setExpReturnReg(result);
+            }
         }
-        
+    }
+
+    public void storeVal(String val) {
+
+        Symbol ident = (Symbol)children.get(0);
+        Var var = (Var) SymbolTable.searchIdent(ident.symbol());
+        String addr = var.getAddrReg();
+        switch (var.getDim()) {
+            case 0 -> {
+                CodeGenerator.generateStore(val, addr, "0");
+            }
+            case 1 -> {
+                children.get(2).compile();
+                String loc = SyntaxChecker.getExpReturnReg();
+                CodeGenerator.generateStore(val, addr, loc);
+            }
+            case 2 -> {
+                children.get(2).compile();
+                String loc1 = SyntaxChecker.getExpReturnReg();
+                children.get(4).compile();
+                String loc2 = SyntaxChecker.getExpReturnReg();
+
+                String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
+                String middleAddr = CodeGenerator.generateAdd(addr, off1);
+                CodeGenerator.generateStore(val, middleAddr, loc2);
+            }
+        }
     }
 
     public int checkDim() {

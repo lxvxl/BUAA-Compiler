@@ -1,14 +1,13 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import ident.idents.Var;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
 import parser.SyntaxChecker;
 import parser.TreeNode;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +50,9 @@ public class VarDecl implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
-        
     }
 }

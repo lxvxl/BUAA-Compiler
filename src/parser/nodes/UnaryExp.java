@@ -6,6 +6,10 @@ import error.ParsingFailedException;
 import ident.SymbolTable;
 import ident.idents.Func;
 import ident.idents.Var;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.CallInst;
+import intermediateCode.instructions.CmpInst;
+import intermediateCode.instructions.SubInst;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -64,37 +68,64 @@ public class UnaryExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         //if UnaryExp → Ident '(' [FuncRParams] ')'
-        if (children.get(0) instanceof Symbol) {
+        if (children.get(0) instanceof Symbol ident) {
             //查看函数是否已经定义
-            Symbol ident = (Symbol)children.get(0);
             Func func = (Func) SymbolTable.searchIdent(ident.symbol());
-            if (SymbolTable.searchIdent(ident.symbol()) == null) {
+            if (func == null) {
                 ErrorHandler.putError(ident.lineNum(), 'c');
                 return;
-            } else {
-                //获得实参类型
-                List<Integer> rDims= new ArrayList<>();
-                if (children.get(2) instanceof FuncRParams) {
-                    ((FuncRParams)children.get(2)).getDims(rDims);
-                }
-                List<Var> definedParams = func.getParams();
-                if (definedParams.size() != rDims.size()) {
-                    ErrorHandler.putError(ident.lineNum(), 'd');
-                    return;
-                } else {
-                    for (int i = 0; i < definedParams.size(); i++) {
-                        if (definedParams.get(i).getDim() != rDims.get(i) && rDims.get(i) != -2) {
-                            ErrorHandler.putError(ident.lineNum(), 'e');
-                            break;
-                        }
-                    }
+            }
+            //获得实参类型
+            List<Integer> rParams= new ArrayList<>();
+            if (children.get(2) instanceof FuncRParams) {
+                ((FuncRParams)children.get(2)).getDims(rParams);
+            }
+            List<Var> definedParams = func.getParams();
+            //查看实参形参数量是否匹配
+            if (definedParams.size() != rParams.size()) {
+                ErrorHandler.putError(ident.lineNum(), 'd');
+                return;
+            }
+            //查看实参形参类型是否匹配
+            for (int i = 0; i < definedParams.size(); i++) {
+                if (definedParams.get(i).getDim() != rParams.get(i) && rParams.get(i) != -2) {
+                    ErrorHandler.putError(ident.lineNum(), 'e');
+                    break;
                 }
             }
-        }
-        for (TreeNode node: children) {
-            node.compile(writer);
+            List<String> params;
+            if (children.get(2) instanceof FuncRParams funcRParams) {
+                funcRParams.compile();
+                params = FuncRParams.getParams();
+            } else {
+                params = new ArrayList<>();
+            }
+            SyntaxChecker.setExpReturnReg(CodeGenerator.generateCall(func.getName(), params));
+            //TODO 伪代码相关生成
+        } else if (children.get(0) instanceof PrimaryExp primaryExp) {
+            primaryExp.compile();
+        } else if (children.get(0) instanceof UnaryOp unaryOp) {
+            children.get(1).compile();
+            switch (unaryOp.getOp()) {
+                case MINU -> {
+                    String preResult = SyntaxChecker.getExpReturnReg();
+                    String afterResult = CodeGenerator.generateSub("0", preResult);
+                    SyntaxChecker.setExpReturnReg(afterResult);
+                }
+                case NOT -> {
+                    String preResult = SyntaxChecker.getExpReturnReg();
+                    if (preResult.charAt(0) != '%') {
+                        SyntaxChecker.setExpReturnReg(Integer.toString(Integer.parseInt(preResult) == 0 ? 1 : 0));
+                    } else {
+                        String afterResult = CodeGenerator.generateReg();
+                        CodeGenerator.addInst(new CmpInst("eq", afterResult, "0", preResult));
+                        SyntaxChecker.setExpReturnReg(afterResult);
+                    }
+                }
+                default -> {}
+            }
         }
     }
 

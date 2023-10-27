@@ -1,4 +1,5 @@
 import error.ErrorHandler;
+import intermediateCode.CodeGenerator;
 import lexical.LexicalManager;
 
 import java.io.BufferedWriter;
@@ -16,8 +17,9 @@ public class Compiler {
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("error.txt"));
         LexicalManager lm = new LexicalManager("testfile.txt");
         TreeNode root = CompUnit.parse(lm);
-        root.compile(bufferedWriter);
+        root.compile();
         ErrorHandler.outputErrors(bufferedWriter);
+        CodeGenerator.output();
         bufferedWriter.close();
     }
 

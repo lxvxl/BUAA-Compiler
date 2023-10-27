@@ -31,7 +31,6 @@ public class RelExp implements TreeNode {
         children.add(addExp);
     }
 
-    // AddExp → MulExp | AddExp ('+' | '−') MulExp
     public static RelExp parse(LexicalManager lm) throws ParsingFailedException {
         List<TreeNode> children = new ArrayList<>();
         lm.mark();
@@ -73,9 +72,9 @@ public class RelExp implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         for (TreeNode node : children) {
-            node.compile(writer);
+            node.compile();
         }
         
     }

@@ -5,6 +5,7 @@ import error.ParsingFailedException;
 import ident.RepeatDefException;
 import ident.SymbolTable;
 import ident.idents.Var;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -53,16 +54,24 @@ public class FuncFParam implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
-        for (TreeNode node: children) {
-            node.compile(writer);
-        }
+    public void compile() {
+        Var var = switch (children.size()) {
+            case 2 -> new Var(((Symbol)children.get(1)).symbol(), false, 0);
+            case 4 -> new Var(((Symbol)children.get(1)).symbol(), false, 1);
+            case 7 -> {
+                children.get(5).compile();
+                int elementSize = Integer.parseInt(SyntaxChecker.getExpReturnReg()) * 4;
+                yield new Var(((Symbol)children.get(1)).symbol(), false, 2, Integer.toString(elementSize));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + children.size());
+        };
         try {
-            SymbolTable.addIdent(new Var(((Symbol)children.get(1)).symbol(), false, children.size() / 2 - 1));
+            SymbolTable.addIdent(var);
         } catch (RepeatDefException e) {
             ErrorHandler.putError(((Symbol)children.get(1)).lineNum(), 'b');
         }
-        
+        var.setAddrReg(CodeGenerator.generateReg() + '_' + var.getName());
+        FuncFParams.addParam(var);
     }
 
     public List<TreeNode> getChildren() {

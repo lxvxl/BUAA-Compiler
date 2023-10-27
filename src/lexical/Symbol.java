@@ -12,6 +12,6 @@ public record Symbol(String symbol, CategoryCode type, int lineNum) implements T
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
     }
 }

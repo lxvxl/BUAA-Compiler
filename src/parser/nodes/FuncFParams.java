@@ -2,6 +2,7 @@ package parser.nodes;
 
 import error.ParsingFailedException;
 import ident.SymbolTable;
+import ident.idents.Var;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
@@ -14,6 +15,7 @@ import java.util.List;
 
 public class FuncFParams implements TreeNode {
     private final List<TreeNode> children;
+    private static final List<Var> params = new ArrayList<>();
 
     private FuncFParams(List<TreeNode> children) {
         this.children = children;
@@ -44,12 +46,20 @@ public class FuncFParams implements TreeNode {
     }
 
     @Override
-    public void compile(BufferedWriter writer) {
+    public void compile() {
         SymbolTable.advanceBlockIn();
+        params.clear();
         for (TreeNode node: children) {
-            node.compile(writer);
+            node.compile();
         }
-        
+    }
+
+    public static void addParam(Var var) {
+        params.add(var);
+    }
+
+    public static List<Var> getParams() {
+        return new ArrayList<>(params);
     }
 
     public List<TreeNode> getChildren() {
