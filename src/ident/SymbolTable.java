@@ -20,7 +20,6 @@ public class SymbolTable {
             throw new RepeatDefException();
         }
         if (tableStack.size() == 1 && ident instanceof Var var) {
-            var.setGlobal();
             var.setAddrReg('@' + ident.getName());
         }
         tableStack.getFirst().put(ident.getName(), ident);

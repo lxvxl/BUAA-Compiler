@@ -1,3 +1,4 @@
+import Writer.Output;
 import error.ErrorHandler;
 import intermediateCode.CodeGenerator;
 import lexical.LexicalManager;
@@ -20,6 +21,8 @@ public class Compiler {
         root.compile();
         ErrorHandler.outputErrors(bufferedWriter);
         CodeGenerator.output();
+        CodeGenerator.toMips();
+        Output.close();
         bufferedWriter.close();
     }
 

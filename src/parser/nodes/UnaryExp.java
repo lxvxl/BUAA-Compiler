@@ -98,7 +98,7 @@ public class UnaryExp implements TreeNode {
             List<String> params;
             if (children.get(2) instanceof FuncRParams funcRParams) {
                 funcRParams.compile();
-                params = FuncRParams.getParams();
+                params = funcRParams.getParams();
             } else {
                 params = new ArrayList<>();
             }
@@ -119,8 +119,7 @@ public class UnaryExp implements TreeNode {
                     if (preResult.charAt(0) != '%') {
                         SyntaxChecker.setExpReturnReg(Integer.toString(Integer.parseInt(preResult) == 0 ? 1 : 0));
                     } else {
-                        String afterResult = CodeGenerator.generateReg();
-                        CodeGenerator.addInst(new CmpInst("eq", afterResult, "0", preResult));
+                        String afterResult = CodeGenerator.generateCmp("0", preResult, "==");
                         SyntaxChecker.setExpReturnReg(afterResult);
                     }
                 }

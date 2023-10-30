@@ -2,6 +2,8 @@ package intermediateCode.instructions;
 
 import java.util.List;
 
+import Writer.Output;
+import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
 public record CallInst(String result, String funcName, List<String> params) implements Inst {
@@ -11,6 +13,28 @@ public record CallInst(String result, String funcName, List<String> params) impl
             return "call " + funcName + " " + String.join(" ", params);
         } else {
             return result + " = call " + funcName + " " + String.join(" ", params);
+        }
+    }
+
+    @Override
+    public void toMips() {
+        Output.output('#' + toString());
+        for (int i = 1; i <= 31; i++) {
+            Output.output(String.format("\tsw $%d, -%d($sp)", i, i * 4));
+        }
+        int curBottom = FrameMonitor.getBottom();
+        for (int i = 0; i < params.size(); i++) {
+            FrameMonitor.getParamVal(params.get(params.size() - 1 - i), "$t0");
+            Output.output(String.format("\tsw $t0, -%d($sp)", (curBottom + i) * 4));
+        }
+        Output.output("\tmove $fp, $sp");
+        Output.output(String.format("\taddi $sp, $sp, %d", -(curBottom - 1 + params.size()) * 4));
+        Output.output("\tjal " + funcName);
+        if (result != null) {
+            FrameMonitor.initParam(result, "$a0");
+        }
+        for (int i = 1; i <= 31; i++) {
+            Output.output(String.format("\tlw $%d, -%d($sp)", i, i * 4));
         }
     }
 }

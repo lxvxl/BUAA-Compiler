@@ -1,9 +1,11 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -40,9 +42,7 @@ public class ForStmt implements TreeNode {
 
     @Override
     public void compile() {
-        for (TreeNode node: children) {
-            node.compile();
-        }
-                
+        children.get(2).compile();
+        ((LVal)children.get(0)).storeVal(SyntaxChecker.getExpReturnReg());
     }
 }

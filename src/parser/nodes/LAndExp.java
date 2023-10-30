@@ -1,10 +1,14 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.BrInst;
+import intermediateCode.instructions.Label;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -14,6 +18,9 @@ import java.util.List;
 
 public class LAndExp implements TreeNode {
     private final List<TreeNode> children;
+    private List<EqExp> eqExps;
+    private static String ifTrueLabel;
+    private static String ifFalseLabel;
 
     private LAndExp(List<TreeNode> children) {
         this.children = children;
@@ -41,10 +48,16 @@ public class LAndExp implements TreeNode {
                 children.add(lm.getSymbol());
                 children.add(EqExp.parse(lm));
             }
+            List<EqExp> eqExps = children
+                    .stream()
+                    .filter(obj -> obj instanceof EqExp)
+                    .map(obj -> (EqExp) obj)
+                    .toList();
+
             if (children.size() == 1) {
                 lm.revokeMark();
                 Logger.write("e解析 LAndExp 成功");
-                return new LAndExp(children);
+                return new LAndExp(children).setEqExps(eqExps);
             }
 
             LAndExp lAndExp = new LAndExp((EqExp) children.get(0));
@@ -56,7 +69,7 @@ public class LAndExp implements TreeNode {
             }
             lm.revokeMark();
             Logger.write("e解析 LAndExp 成功");
-            return lAndExp;
+            return lAndExp.setEqExps(eqExps);
         } catch (ParsingFailedException e) {
             lm.traceBack();
             Logger.write("e解析 LAndExp 失败");
@@ -68,11 +81,26 @@ public class LAndExp implements TreeNode {
         return lm.checkSymbol().type() == CategoryCode.AND;
     }
 
+    //如果为真，前往ifTrueLabel, 否则，前往ifFalseLabel
     @Override
     public void compile() {
-        for (TreeNode node: children) {
-            node.compile();
+        for (int i = 0; i < eqExps.size() - 1; i++) {
+            eqExps.get(i).compile();
+            String nextlabel = CodeGenerator.generateLabel();
+            CodeGenerator.addInst(new BrInst(SyntaxChecker.getExpReturnReg(), nextlabel, ifFalseLabel));
+            CodeGenerator.addInst(new Label(nextlabel));
         }
-                
+        eqExps.get(eqExps.size() - 1).compile();;
+        CodeGenerator.addInst(new BrInst(SyntaxChecker.getExpReturnReg(), ifTrueLabel, ifFalseLabel));
+    }
+
+    public LAndExp setEqExps(List<EqExp> eqExps) {
+        this.eqExps = eqExps;
+        return this;
+    }
+
+    public static void setLabel(String trueLabel, String falseLabel) {
+        ifTrueLabel = trueLabel;
+        ifFalseLabel = falseLabel;
     }
 }

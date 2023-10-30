@@ -1,10 +1,12 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -72,9 +74,16 @@ public class EqExp implements TreeNode {
 
     @Override
     public void compile() {
-        for (TreeNode node: children) {
-            node.compile();
+        if (children.get(0) instanceof RelExp relExp) {
+            relExp.compile();
+        } else {
+            children.get(0).compile();
+            String lResult = SyntaxChecker.getExpReturnReg();
+            children.get(2).compile();
+            String rResult = SyntaxChecker.getExpReturnReg();
+
+            String finalResult = CodeGenerator.generateCmp(lResult, rResult, ((Symbol)children.get(1)).symbol());
+            SyntaxChecker.setExpReturnReg(finalResult);
         }
-                
     }
 }

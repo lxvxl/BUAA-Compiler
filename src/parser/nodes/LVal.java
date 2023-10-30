@@ -59,6 +59,9 @@ public class LVal implements TreeNode {
             return;
         }
         String addr = var.getAddrReg();
+        if (var.isPtr()) {
+            addr = CodeGenerator.generateLoad(addr, "0");
+        }
         switch (children.size()) {
             case 1 -> {
                 //若是零维，返回值，否则，返回地址
@@ -78,8 +81,16 @@ public class LVal implements TreeNode {
                 String loc = SyntaxChecker.getExpReturnReg();
                 //若是一维，返回值，否则，返回地址
                 if (var.getDim() == 1) {
-                    String result = CodeGenerator.generateLoad(addr, loc);
-                    SyntaxChecker.setExpReturnReg(result);
+                    try {
+                        if (var.isConst()) {
+                            SyntaxChecker.setExpReturnReg(var.getInitVal(Integer.parseInt(loc)));
+                        } else {
+                            throw new Exception();
+                        }
+                    } catch (Exception e) {
+                        String result = CodeGenerator.generateLoad(addr, loc);
+                        SyntaxChecker.setExpReturnReg(result);
+                    }
                 } else {
                     String off = CodeGenerator.generateMul(loc, var.getElementSize());
                     String finalAddr = CodeGenerator.generateAdd(off, addr);
@@ -91,12 +102,18 @@ public class LVal implements TreeNode {
                 String loc1 = SyntaxChecker.getExpReturnReg();
                 children.get(5).compile();
                 String loc2 = SyntaxChecker.getExpReturnReg();
-
-                String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
-                String middleAddr = CodeGenerator.generateAdd(addr, off1);
-                //System.out.println(loc2);
-                String result = CodeGenerator.generateLoad(middleAddr, loc2);
-                SyntaxChecker.setExpReturnReg(result);
+                try {
+                    if (var.isConst()) {
+                        SyntaxChecker.setExpReturnReg(var.getInitVal(Integer.parseInt(loc1), Integer.parseInt(loc2)));
+                    } else {
+                        throw new Exception();
+                    }
+                } catch (Exception e) {
+                    String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
+                    String middleAddr = CodeGenerator.generateAdd(addr, off1);
+                    String result = CodeGenerator.generateLoad(middleAddr, loc2);
+                    SyntaxChecker.setExpReturnReg(result);
+                }
             }
         }
     }
@@ -106,19 +123,25 @@ public class LVal implements TreeNode {
         Symbol ident = (Symbol)children.get(0);
         Var var = (Var) SymbolTable.searchIdent(ident.symbol());
         String addr = var.getAddrReg();
-        switch (var.getDim()) {
-            case 0 -> {
+        switch (children.size()) {
+            case 1 -> {
                 CodeGenerator.generateStore(val, addr, "0");
             }
-            case 1 -> {
+            case 4 -> {
+                if (var.isPtr()) {
+                    addr = CodeGenerator.generateLoad(addr, "0");
+                }
                 children.get(2).compile();
                 String loc = SyntaxChecker.getExpReturnReg();
                 CodeGenerator.generateStore(val, addr, loc);
             }
-            case 2 -> {
+            case 7 -> {
+                if (var.isPtr()) {
+                    addr = CodeGenerator.generateLoad(addr, "0");
+                }
                 children.get(2).compile();
                 String loc1 = SyntaxChecker.getExpReturnReg();
-                children.get(4).compile();
+                children.get(5).compile();
                 String loc2 = SyntaxChecker.getExpReturnReg();
 
                 String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());

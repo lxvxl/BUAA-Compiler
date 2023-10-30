@@ -71,6 +71,9 @@ public class FuncFParam implements TreeNode {
             ErrorHandler.putError(((Symbol)children.get(1)).lineNum(), 'b');
         }
         var.setAddrReg(CodeGenerator.generateReg() + '_' + var.getName());
+        if (var.getDim() > 0) {
+            var.setPtr();
+        }
         FuncFParams.addParam(var);
     }
 

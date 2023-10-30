@@ -7,10 +7,12 @@ import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SyntaxChecker {
-    private static int loopDepth = 0;
+    private static final List<String> loopHeads = new ArrayList<>();
+    private static final List<String> loopTails = new ArrayList<>();
     private static String funcState = "out"; //out, void, int
     private static String expReturnReg; //上一个类exp节点计算后结果的存储寄存器
 
@@ -42,16 +44,26 @@ public class SyntaxChecker {
         }
     }
 
-    public static void loopIn() {
-        loopDepth++;
+    public static void loopIn(String headLabel, String tailLabel) {
+        loopHeads.add(headLabel);
+        loopTails.add(tailLabel);
     }
 
     public static void loopOut() {
-        loopDepth--;
+        loopHeads.remove(loopHeads.size() - 1);
+        loopTails.remove(loopTails.size() - 1);
+    }
+
+    public static String getHeadLabel() {
+        return loopHeads.get(loopHeads.size() - 1);
+    }
+
+    public static String getTailLabel() {
+        return loopTails.get(loopTails.size() - 1);
     }
 
     public static boolean isInLoop() {
-        return loopDepth > 0;
+        return loopHeads.size() > 0;
     }
 
     public static void funcIn(String funcType) {

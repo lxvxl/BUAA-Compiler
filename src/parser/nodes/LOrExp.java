@@ -1,10 +1,14 @@
 package parser.nodes;
 
 import error.ParsingFailedException;
+import intermediateCode.CodeGenerator;
+import intermediateCode.instructions.BrInst;
+import intermediateCode.instructions.Label;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
 import logger.Logger;
+import parser.SyntaxChecker;
 import parser.TreeNode;
 
 import java.io.BufferedWriter;
@@ -14,6 +18,9 @@ import java.util.List;
 
 public class LOrExp implements TreeNode {
     private final List<TreeNode> children;
+    private List<LAndExp> andExps;
+    private static String ifTrueLabel;
+    private static String ifFalseLabel;
 
     private LOrExp(List<TreeNode> children) {
         this.children = children;
@@ -42,10 +49,16 @@ public class LOrExp implements TreeNode {
                 children.add(lm.getSymbol());
                 children.add(LAndExp.parse(lm));
             }
+            List<LAndExp> andExps = children
+                    .stream()
+                    .filter(obj -> obj instanceof LAndExp)
+                    .map(obj -> (LAndExp) obj)
+                    .toList();
+
             if (children.size() == 1) {
                 lm.revokeMark();
                 Logger.write("e解析 LOrExp 成功");
-                return new LOrExp(children);
+                return new LOrExp(children).setAndExps(andExps);
             }
 
             LOrExp lOrExp = new LOrExp((LAndExp) children.get(0));
@@ -55,9 +68,10 @@ public class LOrExp implements TreeNode {
                 children.remove(0);
                 children.remove(0);
             }
+
             lm.revokeMark();
             Logger.write("e解析 LOrExp 成功");
-            return lOrExp;
+            return lOrExp.setAndExps(andExps);
         } catch (ParsingFailedException e) {
             lm.traceBack();
             Logger.write("e解析 LOrExp 失败");
@@ -71,9 +85,23 @@ public class LOrExp implements TreeNode {
 
     @Override
     public void compile() {
-        for (TreeNode node: children) {
-            node.compile();
+        for (int i = 0; i < andExps.size() - 1; i++) {
+            String nextlabel = CodeGenerator.generateLabel();
+            LAndExp.setLabel(ifTrueLabel, nextlabel);
+            andExps.get(i).compile();
+            CodeGenerator.addInst(new Label(nextlabel));
         }
-                
+        LAndExp.setLabel(ifTrueLabel, ifFalseLabel);
+        andExps.get(andExps.size() - 1).compile();;
+    }
+
+    public LOrExp setAndExps(List<LAndExp> andExps) {
+        this.andExps = andExps;
+        return this;
+    }
+
+    public static void setLabel(String trueLabel, String falseLabel) {
+        ifTrueLabel = trueLabel;
+        ifFalseLabel = falseLabel;
     }
 }

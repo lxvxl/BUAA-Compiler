@@ -1,11 +1,13 @@
 package intermediateCode;
 
+import Writer.Output;
 import ident.SymbolTable;
 import ident.idents.Func;
 import ident.idents.Var;
 import intermediateCode.instructions.*;
+import intermediateCode.instructions.Label;
 
-import java.beans.PropertyEditorSupport;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +24,7 @@ public class CodeGenerator {
     public record FuncCode(String name, List<Inst> insts) {
         public void output() {
             Func func = (Func) SymbolTable.searchIdent(name);
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (Var var : func.getParams()) {
                 if (!buffer.isEmpty()) {
                     buffer.append(' ');
@@ -31,8 +33,30 @@ public class CodeGenerator {
             }
             System.out.printf("function %s %s (%s)\n", func.getReturnType(), func.getName(), buffer.toString());
             for (Inst inst : insts) {
-                System.out.println("\t" + inst);
+                System.out.println((inst instanceof Label ? "" : "\t") + inst);
             }
+        }
+
+        public void toMips() {
+            FrameMonitor.funcIn();
+            Output.output(name + ":");
+            Func func = (Func) SymbolTable.searchIdent(name);
+            for (int i = 0; i < func.getParams().size(); i++) {
+                FrameMonitor.mapParam(func.getParams().get(i).getAddrReg(), -i);
+                if (func.getParams().get(i).getDim() > 0) {
+                    FrameMonitor.setPtrParam(func.getParams().get(i).getAddrReg());
+                }
+            }
+            for (Inst inst: insts) {
+                if (name.equals("main") && inst instanceof RetInst) {
+                    Output.output("\tli $v0, 10");
+                    Output.output("\tsyscall");
+                } else {
+                    inst.toMips();
+                }
+            }
+            Output.output("\tmove $sp, $fp");
+            Output.output("\tjr $ra");
         }
     }
 
@@ -49,6 +73,18 @@ public class CodeGenerator {
         funcs.addLast(new FuncCode(name, new ArrayList<>()));
     }
 
+    public static void toMips() {
+        Output.output(".data");
+        for (Inst inst : globalInsts) {
+            inst.toMips();
+        }
+        Output.output(".text");
+        Output.output("j main");
+        for (FuncCode func : funcs) {
+            func.toMips();
+        }
+    }
+
     public static String generateReg() {
         registerNum += 1;
         return '%' + Integer.toString(registerNum);
@@ -56,7 +92,7 @@ public class CodeGenerator {
 
     public static String generateLabel() {
         labelNum++;
-        return "label " + labelNum;
+        return "label_" + labelNum;
     }
 
     public static void addInst(Inst inst) {
@@ -120,6 +156,27 @@ public class CodeGenerator {
         } catch (Exception e) {
             String result = generateReg();
             addInst(new ModInst(result, param1, param2));
+            return result;
+        }
+    }
+
+    public static String generateCmp(String param1, String param2, String op) {
+        try {
+            int l = parseInt(param1);
+            int r = parseInt(param2);
+            boolean result = switch (op) {
+                case "==" -> l == r;
+                case "!=" -> l != r;
+                case ">" -> l > r;
+                case "<" -> l < r;
+                case ">=" -> l >= r;
+                case "<=" -> l <= r;
+                default -> throw new IllegalStateException("Unexpected value: " + op);
+            };
+            return result ? "1" : "0";
+        } catch (Exception e) {
+            String result = generateReg();
+            addInst(new CmpInst(op, result, param1, param2));
             return result;
         }
     }

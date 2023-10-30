@@ -8,12 +8,11 @@ import java.util.List;
 public class Var extends AbstractIdent {
     private final boolean isConst;
     private final int dim;
-    private boolean isGlobal = false;
     private String addrReg;
-
     //记得要乘4！！一个int是四个字节！！
     private final String elementSize;
     private List<String> initVal;
+    private boolean isPtr;
 
 
     public Var(String name, boolean isConst, int dim) {
@@ -21,6 +20,7 @@ public class Var extends AbstractIdent {
         this.isConst = isConst;
         this.dim = dim;
         this.elementSize = "4";
+        this.isPtr = false;
     }
 
     public Var(String name, boolean isConst, int dim, String elementSize) {
@@ -28,6 +28,7 @@ public class Var extends AbstractIdent {
         this.isConst = isConst;
         this.dim = dim;
         this.elementSize = elementSize;
+        this.isPtr = false;
     }
 
     public int getDim() {
@@ -36,14 +37,6 @@ public class Var extends AbstractIdent {
 
     public boolean isConst() {
         return isConst;
-    }
-
-    public void setGlobal() {
-        isGlobal = true;
-    }
-
-    public boolean isGlobal() {
-        return isGlobal;
     }
 
     public void setAddrReg(String addrReg) {
@@ -72,6 +65,14 @@ public class Var extends AbstractIdent {
 
     public String getInitVal(int i, int j) {
         return initVal.get(i * Integer.parseInt(elementSize) / 4 + j);
+    }
+
+    public void setPtr() {
+        isPtr = true;
+    }
+
+    public boolean isPtr() {
+        return isPtr;
     }
 
     @Override

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class FuncRParams implements TreeNode {
     private final List<TreeNode> children;
-    private static final List<String> params = new ArrayList<>();
+    private final List<String> params = new ArrayList<>();
 
     private FuncRParams(List<TreeNode> children) {
         this.children = children;
@@ -55,7 +55,6 @@ public class FuncRParams implements TreeNode {
 
     /**
      * 普通变量维度为0，数组为1或2，void为-1，未定义变量为-2
-     * @param dims
      */
     public void getDims(List<Integer> dims) {
         for (TreeNode node : children) {
@@ -65,7 +64,7 @@ public class FuncRParams implements TreeNode {
         }
     }
 
-    public static List<String> getParams() {
+    public List<String> getParams() {
         return new ArrayList<>(params);
     }
 }

@@ -4,9 +4,7 @@ import error.ErrorHandler;
 import error.ParsingFailedException;
 import ident.SymbolTable;
 import intermediateCode.CodeGenerator;
-import intermediateCode.instructions.PutCharInst;
-import intermediateCode.instructions.PutIntInst;
-import intermediateCode.instructions.RetInst;
+import intermediateCode.instructions.*;
 import lexical.CategoryCode;
 import lexical.LexicalManager;
 import lexical.Symbol;
@@ -164,7 +162,6 @@ public class Stmt implements TreeNode {
     public void compile() {
         TreeNode firstChild = children.get(0);
 
-        boolean isLoop = false;
         if (firstChild instanceof LVal lVal) {
             //左值赋值语法错误
             int line = lVal.changeable();
@@ -223,29 +220,85 @@ public class Stmt implements TreeNode {
                     }
                 }
                 case FORTK -> {
+                    //'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
                     //如果是for，需要提前进入block
                     SymbolTable.advanceBlockIn();
-                    SyntaxChecker.loopIn();
-                    isLoop = true;
+
+                    String headLabel = CodeGenerator.generateLabel();
+                    String bodyLabel = CodeGenerator.generateLabel();
+                    String tailLabel = CodeGenerator.generateLabel();
+                    String endLabel = CodeGenerator.generateLabel();
+                    SyntaxChecker.loopIn(tailLabel, endLabel);
+
+                    List<TreeNode> candidates = new ArrayList<>(children.stream()
+                            .filter(c -> !(c instanceof Symbol))
+                            .toList());
+                    if (candidates.get(0) instanceof ForStmt forStmt1) {//执行初始化
+                        forStmt1.compile();
+                        candidates.remove(0);
+                    }
+                    CodeGenerator.addInst(new JumpInst(headLabel));
+                    CodeGenerator.addInst(new Label(headLabel));    //头标签
+                    LOrExp.setLabel(bodyLabel, endLabel);
+                    if (candidates.get(0) instanceof Cond cond) {   //条件判断
+                        cond.compile();
+                        candidates.remove(0);
+                    }
+                    CodeGenerator.addInst(new Label(bodyLabel));    //循环体标签
+                    candidates.get(candidates.size() - 1).compile();//循环体执行
+                    CodeGenerator.addInst(new JumpInst(tailLabel));
+                    CodeGenerator.addInst(new Label(tailLabel));
+                    if (candidates.get(0) instanceof ForStmt forStmt2) {//尾处理
+                        forStmt2.compile();
+                    }
+                    CodeGenerator.addInst(new JumpInst(headLabel)); //前往头标签
+                    CodeGenerator.addInst(new Label(endLabel));    //尾标签
+                    SyntaxChecker.loopOut();
                 }
-                case BREAKTK, CONTINUETK -> {
+                case BREAKTK -> {
                     if (!SyntaxChecker.isInLoop()) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'm');
                     }
+                    CodeGenerator.addInst(new JumpInst(SyntaxChecker.getTailLabel()));
+                }
+                case CONTINUETK -> {
+                    if (!SyntaxChecker.isInLoop()) {
+                        ErrorHandler.putError(firstSymbol.lineNum(), 'm');
+                    }
+                    CodeGenerator.addInst(new JumpInst(SyntaxChecker.getHeadLabel()));
                 }
                 case RETURNTK -> {
                     if (SyntaxChecker.isReturnValid(children.size() == 3)) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'f');
                     }
-                    children.get(1).compile();
-                    CodeGenerator.addInst(new RetInst(SyntaxChecker.getExpReturnReg()));
+                    if (children.size() == 3) {
+                        children.get(1).compile();
+                        CodeGenerator.addInst(new RetInst(SyntaxChecker.getExpReturnReg()));
+                    } else {
+                        CodeGenerator.addInst(new RetInst(null));
+                    }
+                }
+                case IFTK -> {
+                    //'if' '(' Cond ')' Stmt [ 'else' Stmt ]
+                    String trueLabel = CodeGenerator.generateLabel();
+                    String falseLabel = CodeGenerator.generateLabel();
+
+                    LOrExp.setLabel(trueLabel, falseLabel);
+                    children.get(2).compile();
+                    CodeGenerator.addInst(new Label(trueLabel));
+                    children.get(4).compile();
+                    if (children.size() > 5) {
+                        String endLabel = CodeGenerator.generateLabel();
+                        CodeGenerator.addInst(new JumpInst(endLabel));
+                        CodeGenerator.addInst(new Label(falseLabel));
+                        children.get(6).compile();
+                        CodeGenerator.addInst(new Label(endLabel));
+                    } else {
+                        CodeGenerator.addInst(new Label(falseLabel));
+                    }
                 }
             }
         }
-        if (isLoop) {
-            SyntaxChecker.loopOut();
-        }
-        
     }
 
     public List<TreeNode> getChildren() {
