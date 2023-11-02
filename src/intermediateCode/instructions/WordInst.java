@@ -17,10 +17,12 @@ public record WordInst(String name, int size, List<String> initVals) implements 
     public void toMips() {
         Output.output('#' + toString());
         if (initVals == null) {
+            Output.output(".align 2");
             Output.output(String.format("%s: .space %d", name, size));
         } else {
             List<String> reversedVals = new ArrayList<>(initVals);
             //Collections.reverse(reversedVals);
+            Output.output(".align 2");
             Output.output(String.format("%s: .word %s", name, String.join(",", reversedVals)));
         }
     }
