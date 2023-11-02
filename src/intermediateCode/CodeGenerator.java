@@ -8,8 +8,7 @@ import intermediateCode.instructions.*;
 import intermediateCode.instructions.Label;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 
 import static java.lang.Integer.parseInt;
@@ -20,6 +19,8 @@ public class CodeGenerator {
     private static int registerNum = 0;
     private static int labelNum = 0;
     private static final List<Inst> globalInsts = new ArrayList<>();
+    private static final Map<String, String> constStrMap = new HashMap<>();
+    private static int constStrNum = 0;
 
     public record FuncCode(String name, List<Inst> insts) {
         public void output() {
@@ -43,9 +44,6 @@ public class CodeGenerator {
             Func func = (Func) SymbolTable.searchIdent(name);
             for (int i = 0; i < func.getParams().size(); i++) {
                 FrameMonitor.mapParam(func.getParams().get(i).getAddrReg(), -i);
-                if (func.getParams().get(i).getDim() > 0) {
-                    FrameMonitor.setPtrParam(func.getParams().get(i).getAddrReg());
-                }
             }
             for (Inst inst: insts) {
                 if (name.equals("main") && inst instanceof RetInst) {
@@ -75,6 +73,9 @@ public class CodeGenerator {
 
     public static void toMips() {
         Output.output(".data");
+        for (Map.Entry<String, String> entry : constStrMap.entrySet()) {
+            Output.output(String.format("%s: .asciiz \"%s\"", entry.getValue(), entry.getKey()));
+        }
         for (Inst inst : globalInsts) {
             inst.toMips();
         }
@@ -108,6 +109,21 @@ public class CodeGenerator {
      */
     public static boolean isGlobal() {
         return funcs.isEmpty();
+    }
+
+    public static void generatePutStr(String str) {
+        String label;
+        if (str.isEmpty()) {
+            return;
+        }
+        if (constStrMap.containsKey(str)) {
+            label = constStrMap.get(str);
+        } else {
+            label = "CONSTR_" + constStrNum;
+            constStrNum++;
+            constStrMap.put(str, label);
+        }
+        addInst(new PutStrInst(label));
     }
 
     public static String generateAdd(String param1, String param2) {

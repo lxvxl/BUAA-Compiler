@@ -2,22 +2,17 @@ package intermediateCode;
 
 import Writer.Output;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class FrameMonitor {
     private static final Map<String, Integer> params = new HashMap<>();
     private static final Map<String, Integer> alloca = new HashMap<>();
-    private static final Set<String> ptrs = new HashSet<>();
     private static int bottom;
 
     public static void funcIn() {
-        bottom = 32;
+        bottom = 1;
         params.clear();
         alloca.clear();
-        ptrs.clear();
     }
 
     /**
@@ -59,11 +54,20 @@ public class FrameMonitor {
         alloca.put(addr, loc);
     }
 
-    public static int getBottom() {
-        return bottom;
+    public static int storeEnv(List<String> regs) {
+        int temp = bottom;
+        for (String reg : regs) {
+            Output.output(String.format("\tsw %s, -%d($sp)", reg, temp * 4));
+            temp++;
+        }
+        return temp;
     }
 
-    public static void setPtrParam(String param) {
-        ptrs.add(param);
+    public static void restoreEnv(List<String> regs) {
+        int temp = bottom;
+        for (String reg : regs) {
+            Output.output(String.format("\tlw %s, -%d($sp)", reg, temp * 4));
+            temp++;
+        }
     }
 }

@@ -14,7 +14,7 @@ public record RetInst(String ret) implements Inst {
     public void toMips() {
         Output.output('#' + toString());
         if (ret != null) {
-            FrameMonitor.getParamVal(ret, "$a0");
+            FrameMonitor.getParamVal(ret, "$v0");
         }
         Output.output("\tmove $sp, $fp");
         Output.output("\tjr $ra");

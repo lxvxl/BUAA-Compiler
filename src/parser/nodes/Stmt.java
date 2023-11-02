@@ -203,21 +203,20 @@ public class Stmt implements TreeNode {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'l');
                     }
                     int p = 0;
+                    StringBuilder builder = new StringBuilder();
                     for (int i = 1; i < formatString.length() - 1; i++) {
                         char c = formatString.charAt(i);
-                        switch (c) {
-                            case '%' -> {
-                                CodeGenerator.addInst(new PutIntInst(params.get(p)));
-                                p++;
-                                i++;
-                            }
-                            case '\\' -> {
-                                CodeGenerator.addInst(new PutCharInst('\n'));
-                                i++;
-                            }
-                            default -> CodeGenerator.addInst(new PutCharInst(c));
+                        if (c == '%') {
+                            CodeGenerator.generatePutStr(builder.toString());
+                            builder = new StringBuilder();
+                            CodeGenerator.addInst(new PutIntInst(params.get(p)));
+                            p++;
+                            i++;
+                        } else {
+                            builder.append(c);
                         }
                     }
+                    CodeGenerator.generatePutStr(builder.toString());
                 }
                 case FORTK -> {
                     //'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
