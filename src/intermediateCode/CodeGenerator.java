@@ -1,13 +1,10 @@
 package intermediateCode;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import ident.SymbolTable;
 import ident.idents.Func;
-import ident.idents.Var;
 import intermediateCode.instructions.*;
-import intermediateCode.instructions.Label;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -21,42 +18,6 @@ public class CodeGenerator {
     private static final List<Inst> globalInsts = new ArrayList<>();
     private static final Map<String, String> constStrMap = new HashMap<>();
     private static int constStrNum = 0;
-
-    public record FuncCode(String name, List<Inst> insts) {
-        public void output() {
-            Func func = (Func) SymbolTable.searchIdent(name);
-            StringBuilder buffer = new StringBuilder();
-            for (Var var : func.getParams()) {
-                if (!buffer.isEmpty()) {
-                    buffer.append(' ');
-                }
-                buffer.append(var.getAddrReg());
-            }
-            System.out.printf("function %s %s (%s)\n", func.getReturnType(), func.getName(), buffer.toString());
-            for (Inst inst : insts) {
-                System.out.println((inst instanceof Label ? "" : "\t") + inst);
-            }
-        }
-
-        public void toMips() {
-            FrameMonitor.funcIn();
-            Output.output(name + ":");
-            Func func = (Func) SymbolTable.searchIdent(name);
-            for (int i = 0; i < func.getParams().size(); i++) {
-                FrameMonitor.mapParam(func.getParams().get(i).getAddrReg(), -i);
-            }
-            for (Inst inst: insts) {
-                if (name.equals("main") && inst instanceof RetInst) {
-                    Output.output("\tli $v0, 10");
-                    Output.output("\tsyscall");
-                } else {
-                    inst.toMips();
-                }
-            }
-            Output.output("\tmove $sp, $fp");
-            Output.output("\tjr $ra");
-        }
-    }
 
     public static void output() {
         for (Inst inst : globalInsts) {
@@ -72,15 +33,15 @@ public class CodeGenerator {
     }
 
     public static void toMips() {
-        Output.output(".data");
+        MipsGenerator.addInst(".data");
         for (Map.Entry<String, String> entry : constStrMap.entrySet()) {
-            Output.output(String.format("%s: .asciiz \"%s\"", entry.getValue(), entry.getKey()));
+            MipsGenerator.addInst(String.format("%s: .asciiz \"%s\"", entry.getValue(), entry.getKey()));
         }
         for (Inst inst : globalInsts) {
             inst.toMips();
         }
-        Output.output(".text");
-        Output.output("j main");
+        MipsGenerator.addInst(".text");
+        MipsGenerator.addInst("j func_main");
         for (FuncCode func : funcs) {
             func.toMips();
         }
@@ -98,7 +59,7 @@ public class CodeGenerator {
 
     public static void addInst(Inst inst) {
         if (funcs.size() >= 1) {
-            funcs.getLast().insts.add(inst);
+            funcs.getLast().insts().add(inst);
         } else {
             globalInsts.add(inst);
         }
@@ -234,5 +195,18 @@ public class CodeGenerator {
         }
         addInst(new CallInst(result, name, params));
         return result;
+    }
+
+    public static void generateBr(String param, String trueLabel, String falseLabel) {
+        try {
+            int n = Integer.parseInt(param);
+            if (n == 0) {
+                addInst(new JumpInst(falseLabel));
+            } else {
+                addInst(new JumpInst(trueLabel));
+            }
+        } catch (Exception e) {
+            addInst(new BrInst(param, trueLabel, falseLabel));
+        }
     }
 }

@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.Inst;
 
 public record JumpInst(String label) implements Inst {
@@ -11,7 +11,7 @@ public record JumpInst(String label) implements Inst {
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
-        Output.output("\tj " + label);
+        MipsGenerator.addInst('#' + toString());
+        MipsGenerator.addInst("\tj " + label);
     }
 }

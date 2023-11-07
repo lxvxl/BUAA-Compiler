@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
@@ -12,9 +12,9 @@ public record LoadInst(String result, String addr, int offset) implements Inst {
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
+        MipsGenerator.addInst('#' + toString());
         FrameMonitor.getParamVal(addr, "$t0");
-        Output.output(String.format("\tlw $t2, %d($t0)", offset));
+        MipsGenerator.addInst(String.format("\tlw $t2, %d($t0)", offset));
         FrameMonitor.initParam(result, "$t2");
     }
 }

@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
@@ -12,7 +12,7 @@ public record AllocaInst(String result, int size) implements Inst {
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
+        MipsGenerator.addInst('#' + toString());
         FrameMonitor.allocaParam(size, result);
     }
 }

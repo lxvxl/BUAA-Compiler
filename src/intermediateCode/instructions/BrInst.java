@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
@@ -12,9 +12,9 @@ public record BrInst(String reg, String trueLabel, String falseLabel) implements
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
+        MipsGenerator.addInst('#' + toString());
         FrameMonitor.getParamVal(reg, "$t0");
-        Output.output("\tbne $t0, $0, " + trueLabel);
-        Output.output("\tj " + falseLabel);
+        MipsGenerator.addInst("\tbne $t0, $0, " + trueLabel);
+        MipsGenerator.addInst("\tj " + falseLabel);
     }
 }

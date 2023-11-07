@@ -1,6 +1,6 @@
 package intermediateCode;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 
 import java.util.*;
 
@@ -20,7 +20,7 @@ public class FrameMonitor {
      */
     public static void initParam(String param, String reg) {
         params.put(param, bottom);
-        Output.output(String.format("\tsw %s, %d($sp)", reg, -bottom * 4));
+        MipsGenerator.addInst(String.format("\tsw %s, %d($sp)", reg, -bottom * 4));
         bottom++;
     }
 
@@ -29,13 +29,13 @@ public class FrameMonitor {
      */
     public static void getParamVal(String param, String reg) {
         if (params.containsKey(param)) {
-            Output.output(String.format("\tlw %s, %d($sp)", reg, -params.get(param) * 4));
+            MipsGenerator.addInst(String.format("\tlw %s, %d($sp)", reg, -params.get(param) * 4));
         } else if (alloca.containsKey(param)) {
-            Output.output(String.format("\tadd %s, $sp, %d", reg, -alloca.get(param) * 4));
+            MipsGenerator.addInst(String.format("\tadd %s, $sp, %d", reg, -alloca.get(param) * 4));
         } else if (param.charAt(0) == '@') {
-            Output.output(String.format("\tla %s, %s", reg, param.substring(1)));
+            MipsGenerator.addInst(String.format("\tla %s, %s", reg, "g_" + param.substring(1)));
         } else {
-            Output.output(String.format("\tli %s, %d", reg, Integer.parseInt(param)));
+            MipsGenerator.addInst(String.format("\tli %s, %d", reg, Integer.parseInt(param)));
         }
     }
 
@@ -57,7 +57,7 @@ public class FrameMonitor {
     public static int storeEnv(List<String> regs) {
         int temp = bottom;
         for (String reg : regs) {
-            Output.output(String.format("\tsw %s, -%d($sp)", reg, temp * 4));
+            MipsGenerator.addInst(String.format("\tsw %s, -%d($sp)", reg, temp * 4));
             temp++;
         }
         return temp;
@@ -66,7 +66,7 @@ public class FrameMonitor {
     public static void restoreEnv(List<String> regs) {
         int temp = bottom;
         for (String reg : regs) {
-            Output.output(String.format("\tlw %s, -%d($sp)", reg, temp * 4));
+            MipsGenerator.addInst(String.format("\tlw %s, -%d($sp)", reg, temp * 4));
             temp++;
         }
     }

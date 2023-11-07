@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
@@ -12,11 +12,11 @@ public record DivInst(String result, String para1, String para2) implements Inst
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
+        MipsGenerator.addInst('#' + toString());
         FrameMonitor.getParamVal(para1, "$t0");
         FrameMonitor.getParamVal(para2, "$t1");
-        Output.output("\tdiv $t0, $t1");
-        Output.output("\tmflo $t2");
+        MipsGenerator.addInst("\tdiv $t0, $t1");
+        MipsGenerator.addInst("\tmflo $t2");
         FrameMonitor.initParam(result, "$t2");
     }
 }

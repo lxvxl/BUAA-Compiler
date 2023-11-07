@@ -87,11 +87,11 @@ public class LAndExp implements TreeNode {
         for (int i = 0; i < eqExps.size() - 1; i++) {
             eqExps.get(i).compile();
             String nextlabel = CodeGenerator.generateLabel();
-            CodeGenerator.addInst(new BrInst(SyntaxChecker.getExpReturnReg(), nextlabel, ifFalseLabel));
+            CodeGenerator.generateBr(SyntaxChecker.getExpReturnReg(), nextlabel, ifFalseLabel);
             CodeGenerator.addInst(new Label(nextlabel));
         }
         eqExps.get(eqExps.size() - 1).compile();;
-        CodeGenerator.addInst(new BrInst(SyntaxChecker.getExpReturnReg(), ifTrueLabel, ifFalseLabel));
+        CodeGenerator.generateBr(SyntaxChecker.getExpReturnReg(), ifTrueLabel, ifFalseLabel);
     }
 
     public LAndExp setEqExps(List<EqExp> eqExps) {

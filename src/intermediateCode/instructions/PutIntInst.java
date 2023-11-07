@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
@@ -12,9 +12,9 @@ public record PutIntInst(String n) implements Inst {
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
+        MipsGenerator.addInst('#' + toString());
         FrameMonitor.getParamVal(n, "$a0");
-        Output.output("\tli $v0, 1");
-        Output.output("\tsyscall");
+        MipsGenerator.addInst("\tli $v0, 1");
+        MipsGenerator.addInst("\tsyscall");
     }
 }

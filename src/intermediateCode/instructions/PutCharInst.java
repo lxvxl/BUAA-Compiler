@@ -1,6 +1,6 @@
 package intermediateCode.instructions;
 
-import Writer.Output;
+import Writer.MipsGenerator;
 import intermediateCode.Inst;
 
 public record PutCharInst(char c) implements Inst {
@@ -11,9 +11,9 @@ public record PutCharInst(char c) implements Inst {
 
     @Override
     public void toMips() {
-        Output.output('#' + toString());
-        Output.output(String.format("\tli $a0, %d", (int)c));
-        Output.output("\tli $v0, 11");
-        Output.output("\tsyscall");
+        MipsGenerator.addInst('#' + toString());
+        MipsGenerator.addInst(String.format("\tli $a0, %d", (int)c));
+        MipsGenerator.addInst("\tli $v0, 11");
+        MipsGenerator.addInst("\tsyscall");
     }
 }
