@@ -4,6 +4,10 @@ import Writer.MipsGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Stream;
+
 public record RetInst(String ret) implements Inst {
     @Override
     public String toString() {
@@ -18,6 +22,26 @@ public record RetInst(String ret) implements Inst {
         }
         MipsGenerator.addInst("\tmove $sp, $fp");
         MipsGenerator.addInst("\tjr $ra");
+    }
+
+    @Override
+    public List<String> usedReg() {
+        return Stream.of(ret).filter(p -> !Inst.isInt(p)).toList();
+    }
+
+    @Override
+    public List<String> getParams() {
+        return Stream.of(ret).toList();
+    }
+
+    @Override
+    public Inst generateEquivalentInst(HashMap<String, String> regMap) {
+        return new RetInst(Inst.getEquivalentReg(regMap, ret));
+    }
+
+    @Override
+    public String getResult() {
+        return null;
     }
 }
 

@@ -20,6 +20,7 @@ public class Compiler {
         TreeNode root = CompUnit.parse(lm);
         root.compile();
         ErrorHandler.outputErrors(bufferedWriter);
+        CodeGenerator.optimize();
         CodeGenerator.output();
         CodeGenerator.toMips();
         MipsGenerator.outputInsts();

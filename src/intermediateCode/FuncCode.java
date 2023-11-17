@@ -5,16 +5,44 @@ import ident.SymbolTable;
 import ident.idents.Func;
 import ident.idents.Var;
 import intermediateCode.instructions.*;
+import intermediateCode.optimize.BasicBlock;
 import parser.nodes.Block;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public record FuncCode(String name, List<Inst> insts, List<BasicBlock> basicBlocks) {
+public record FuncCode(String name, List<Inst> insts) {
     private static final boolean peepholeOp = true;
 
-    public FuncCode(String name, List<Inst> insts) {
-        this(name, insts, new ArrayList<>());
+    public void optimize() {
+        HashMap<String, BasicBlock> labelToBlock = new HashMap<>();
+        List<BasicBlock> basicBlocks = new ArrayList<>();
+        generateBasicBlocks(basicBlocks, labelToBlock);
+        insts.clear();
+        for (BasicBlock block : basicBlocks) {
+            block.dagOptimize();
+        }
+
+        boolean isFinished = false;
+        while (!isFinished) {
+            isFinished = true;
+            for (int i = basicBlocks.size() - 1; i >= 0; i--) {
+                BasicBlock curBlock = basicBlocks.get(i);
+                for (String label : curBlock.getNextBlock()) {
+                    if (curBlock.addUsefulVar(labelToBlock.get(label).getInUsefulVar())) {
+                        isFinished = false;
+                    }
+                }
+                if (curBlock.generateInUsefulVar()) {
+                    isFinished = false;
+                }
+            }
+        }
+        basicBlocks.forEach(BasicBlock::removeUnusedVar);
+
+        basicBlocks.forEach(b -> insts.addAll(b.getInsts()));
     }
 
     public void output() {
@@ -27,13 +55,9 @@ public record FuncCode(String name, List<Inst> insts, List<BasicBlock> basicBloc
             buffer.append(var.getAddrReg());
         }
         System.out.printf("function %s %s (%s)\n", func.getReturnType(), func.getName(), buffer.toString());
-        generateBasicBlocks();
-        for (BasicBlock basicBlock : basicBlocks) {
-            basicBlock.output();
-        }
-        /*for (Inst inst : insts) {
+        for (Inst inst : insts) {
             System.out.println((inst instanceof Label ? "" : "\t") + inst);
-        }*/
+        }
     }
 
     public void toMips() {
@@ -67,27 +91,44 @@ public record FuncCode(String name, List<Inst> insts, List<BasicBlock> basicBloc
         MipsGenerator.addInst("\tjr $ra");
     }
 
-    public void generateBasicBlocks() {
-        BasicBlock curBlock = new BasicBlock(name);
+    /**
+     * 生成基本快
+     */
+    public void generateBasicBlocks(List<BasicBlock> basicBlocks, HashMap<String, BasicBlock> labelToBlock) {
+        Map<String, String> regMap = new HashMap<>();
+        Func func = (Func) SymbolTable.searchIdent(name);
+        func.getParams().forEach(var -> regMap.put(var.getAddrReg(), var.getAddrReg()));
+        BasicBlock curBlock = new BasicBlock(name, regMap);
+        labelToBlock.put(name, curBlock);
         for (Inst inst : insts) {
             if (inst instanceof Label label) {
                 if (curBlock != null) {
                     curBlock.setNextBlock(label.label());
                     basicBlocks.add(curBlock);
                 }
-                curBlock = new BasicBlock(label.label());
+                curBlock = new BasicBlock(label.label(), regMap);
+                labelToBlock.put(label.label(), curBlock);
                 curBlock.addInst(inst);
             } else if (inst instanceof JumpInst jumpInst) {
+                if (curBlock == null) {
+                    continue;
+                }
                 curBlock.setNextBlock(jumpInst.label());
                 curBlock.addInst(inst);
                 basicBlocks.add(curBlock);
                 curBlock = null;
             } else if (inst instanceof BrInst brInst) {
+                if (curBlock == null) {
+                    continue;
+                }
                 curBlock.setNextBlock(brInst.trueLabel(), brInst.falseLabel());
                 curBlock.addInst(inst);
                 basicBlocks.add(curBlock);
                 curBlock = null;
             } else {
+                if (curBlock == null) {
+                    continue;
+                }
                 curBlock.addInst(inst);
             }
         }
@@ -95,4 +136,6 @@ public record FuncCode(String name, List<Inst> insts, List<BasicBlock> basicBloc
             basicBlocks.add(curBlock);
         }
     }
+
+
 }

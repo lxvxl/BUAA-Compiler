@@ -90,7 +90,7 @@ public class LAndExp implements TreeNode {
             CodeGenerator.generateBr(SyntaxChecker.getExpReturnReg(), nextlabel, ifFalseLabel);
             CodeGenerator.addInst(new Label(nextlabel));
         }
-        eqExps.get(eqExps.size() - 1).compile();;
+        eqExps.get(eqExps.size() - 1).compile();
         CodeGenerator.generateBr(SyntaxChecker.getExpReturnReg(), ifTrueLabel, ifFalseLabel);
     }
 

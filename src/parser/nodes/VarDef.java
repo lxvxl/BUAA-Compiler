@@ -110,10 +110,10 @@ public class VarDef implements TreeNode {
                 initVal.compile();
                 List<String> initVals = InitVal.getInitVals();
                 if (dim == 0) {
-                    CodeGenerator.addInst(new StoreInst(initVals.get(0), addrReg, 0));
+                    CodeGenerator.addInst(new StoreInst(initVals.get(0), addrReg, 0, null, false));
                 } else {
                     for (int i = 0; i < initVals.size(); i++) {
-                        CodeGenerator.addInst(new StoreInst(initVals.get(i), addrReg, 4 * i));
+                        CodeGenerator.addInst(new StoreInst(initVals.get(i), addrReg, 4 * i, addrReg, false));
                     }
                 }
             }

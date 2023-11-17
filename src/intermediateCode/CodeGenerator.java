@@ -19,6 +19,12 @@ public class CodeGenerator {
     private static final Map<String, String> constStrMap = new HashMap<>();
     private static int constStrNum = 0;
 
+    public static void optimize() {
+        for (FuncCode funcCode : funcs) {
+            funcCode.optimize();
+        }
+    }
+
     public static void output() {
         for (Inst inst : globalInsts) {
             System.out.println(inst);
@@ -158,25 +164,25 @@ public class CodeGenerator {
         }
     }
 
-    public static String generateLoad(String addr, String loc) {
+    public static String generateLoad(String addr, String loc, String arrName) {
         String result = generateReg();
         try {
-            addInst(new LoadInst(result, addr, parseInt(loc) * 4));
+            addInst(new LoadInst(result, addr, parseInt(loc) * 4, arrName));
         } catch (Exception e) {
             String off = generateMul(loc, "4");
             String finalAddr = generateAdd(addr, off);
-            addInst(new LoadInst(result, finalAddr, 0));
+            addInst(new LoadInst(result, finalAddr, 0, arrName));
         }
         return result;
     }
 
-    public static void generateStore(String val, String addr, String loc) {
+    public static void generateStore(String val, String addr, String loc, String arrName, boolean isGlobalArea) {
         try {
-            addInst(new StoreInst(val, addr, parseInt(loc) * 4));
+            addInst(new StoreInst(val, addr, parseInt(loc) * 4, arrName, isGlobalArea));
         } catch (Exception e) {
             String off = generateMul(loc, "4");
             String finalAddr = generateAdd(addr, off);
-            addInst(new StoreInst(val, finalAddr, 0));
+            addInst(new StoreInst(val, finalAddr, 0, arrName, isGlobalArea));
         }
     }
 

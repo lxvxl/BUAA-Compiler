@@ -1,6 +1,11 @@
 package intermediateCode.instructions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import Writer.MipsGenerator;
@@ -33,6 +38,30 @@ public record CallInst(String result, String funcName, List<String> params) impl
         if (result != null) {
             FrameMonitor.initParam(result, "$v0");
         }
+    }
+
+    @Override
+    public List<String> usedReg() {
+        return params.stream().filter(p -> !Inst.isInt(p)).toList();
+    }
+
+    @Override
+    public List<String> getParams() {
+        return params.stream().filter(p -> !Inst.isInt(p)).toList();
+    }
+
+    @Override
+    public Inst generateEquivalentInst(HashMap<String, String> regMap) {
+        return new CallInst(result,
+                funcName,
+                params.stream()
+                        .map(e -> Inst.getEquivalentReg(regMap, e))
+                        .toList());
+    }
+
+    @Override
+    public String getResult() {
+        return result;
     }
 }
 
