@@ -63,7 +63,7 @@ public class VarDef implements TreeNode {
         int dim = 0;
         String[] results = new String[2];
         for (TreeNode node: children) {
-            if (node instanceof  ConstExp constExp) {
+            if (node instanceof ConstExp constExp) {
                 constExp.compile();
                 results[dim] = SyntaxChecker.getExpReturnReg();
                 dim++;
@@ -104,7 +104,7 @@ public class VarDef implements TreeNode {
             //如果不是全局变量
             String addrReg = CodeGenerator.generateReg() + '_' + var.getName();
             var.setAddrReg(addrReg);
-            CodeGenerator.addInst(new AllocaInst(addrReg, size));
+            CodeGenerator.addInst(new AllocaInst(addrReg, size, dim != 0));
             if (children.get(children.size() - 1) instanceof InitVal initVal) {
                 InitVal.clearInitVals();
                 initVal.compile();

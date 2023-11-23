@@ -103,7 +103,6 @@ public class UnaryExp implements TreeNode {
                 params = new ArrayList<>();
             }
             SyntaxChecker.setExpReturnReg(CodeGenerator.generateCall(func.getName(), params));
-            //TODO 伪代码相关生成
         } else if (children.get(0) instanceof PrimaryExp primaryExp) {
             primaryExp.compile();
         } else if (children.get(0) instanceof UnaryOp unaryOp) {

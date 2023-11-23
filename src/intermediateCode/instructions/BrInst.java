@@ -1,15 +1,22 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
+import intermediateCode.optimize.RegAllocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record BrInst(String reg, String trueLabel, String falseLabel) implements Inst {
+public record BrInst(int num, String reg, String trueLabel, String falseLabel) implements Inst {
+
+    public BrInst(String reg, String trueLabel, String falseLabel) {
+        this(CodeGenerator.getInstNum(), reg, trueLabel, falseLabel);
+    }
+
     @Override
     public String toString() {
         return String.format("br %s %s %s", reg, trueLabel, falseLabel);
@@ -18,6 +25,12 @@ public record BrInst(String reg, String trueLabel, String falseLabel) implements
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
+        if (CodeGenerator.OPTIMIZE) {
+            String val = RegAllocator.getParamVal(reg, num);
+            MipsGenerator.addInst(String.format("\tbeq %s, $0, %s", val, falseLabel));
+            MipsGenerator.addInst("\tj " + trueLabel);
+            return;
+        }
         FrameMonitor.getParamVal(reg, "$t0");
         MipsGenerator.addInst("\tbne $t0, $0, " + trueLabel);
         MipsGenerator.addInst("\tj " + falseLabel);

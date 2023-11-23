@@ -1,13 +1,19 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Inst;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public record PutStrInst(String label) implements Inst {
+public record PutStrInst(int num, String label) implements Inst {
+
+    public PutStrInst(String label) {
+        this(CodeGenerator.getInstNum(), label);
+    }
+
     @Override
     public String toString() {
         return String.format("putstr %s", label);

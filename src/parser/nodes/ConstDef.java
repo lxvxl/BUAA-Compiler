@@ -97,7 +97,7 @@ public class ConstDef implements TreeNode {
         } else {
             String addrReg = CodeGenerator.generateReg() + '_' + var.getName();
             var.setAddrReg(addrReg);
-            CodeGenerator.addInst(new AllocaInst(addrReg, size));
+            CodeGenerator.addInst(new AllocaInst(addrReg, size, dim != 0));
 
             if (dim == 0) {
                 CodeGenerator.addInst(new StoreInst(initVals.get(0), addrReg, 0, null, false));

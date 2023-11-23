@@ -185,7 +185,6 @@ public class Stmt implements TreeNode {
         } else if (firstChild instanceof Symbol firstSymbol) {
             switch (firstSymbol.type()) {
                 case PRINTFTK -> {
-                    //TODO 需要修改的更高效
                     String formatString = ((Symbol) children.get(2)).symbol();
                     int count = 0;
                     for (char c : formatString.toCharArray()) {
@@ -201,12 +200,13 @@ public class Stmt implements TreeNode {
                             }).toList();
                     if (count != params.size()) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'l');
+                        return;
                     }
                     int p = 0;
                     StringBuilder builder = new StringBuilder();
                     for (int i = 1; i < formatString.length() - 1; i++) {
                         char c = formatString.charAt(i);
-                        if (c == '%') {
+                        if (c == '%' && formatString.charAt(i + 1) == 'd') {
                             CodeGenerator.generatePutStr(builder.toString());
                             builder = new StringBuilder();
                             CodeGenerator.addInst(new PutIntInst(params.get(p)));
@@ -220,8 +220,8 @@ public class Stmt implements TreeNode {
                 }
                 case FORTK -> {
                     //'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-                    //如果是for，需要提前进入block
-                    SymbolTable.advanceBlockIn();
+                    //如果是for，需要提前进入block  ??但好像不应该提前进入，如果for后面没有跟随基本块的话
+                    //SymbolTable.advanceBlockIn();
 
                     String headLabel = CodeGenerator.generateLabel();
                     String bodyLabel = CodeGenerator.generateLabel();

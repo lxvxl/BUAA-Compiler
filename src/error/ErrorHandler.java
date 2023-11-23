@@ -35,4 +35,8 @@ public class ErrorHandler {
             writer.write('\n');
         }
     }
+
+    public static boolean hasErrors() {
+        return errors.size() > 0;
+    }
 }

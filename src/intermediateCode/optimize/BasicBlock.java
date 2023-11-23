@@ -223,9 +223,6 @@ public class BasicBlock {
                         nowUsefulVar.add(storeInst.addr());
                         nowUsefulVar.add(storeInst.arrName());
                     }
-                    /*if (Inst.isTempParam(storeInst.addr())) {
-                        nowUsefulVar.add(storeInst.addr());
-                    }*/
                 } else if (storeInst.isArray() && nowUsefulVar.contains(storeInst.arrName())) {
                     //如果存储是数组，且数组是有用的
                     nowUsefulVar.add(storeInst.val());
@@ -238,6 +235,26 @@ public class BasicBlock {
         }
         Collections.reverse(newInsts);
         this.insts = newInsts;
+    }
+
+    /**
+     * 记录变量的使用指令
+     * 记录栈变量的引用次数以及冲突关系
+     */
+    public void allocaReg() {
+        HashSet<String> nowUsefulVar = new HashSet<>(outUsefulVar);
+        for (int i = insts.size() - 1; i >= 0; i--) {
+            Inst inst = insts.get(i);
+            RegAllocator.recordParamUsage(inst);
+            if (inst instanceof LoadInst loadInst && !loadInst.isArray() && Inst.isStackParam(loadInst.addr())) {
+                RegAllocator.addParamRef(loadInst.addr());
+                nowUsefulVar.add(loadInst.addr());
+            } else if (inst instanceof StoreInst storeInst && !storeInst.isArray() && Inst.isStackParam(storeInst.addr())) {
+                RegAllocator.addParamRef(storeInst.addr());
+                nowUsefulVar.remove(storeInst.addr());
+                RegAllocator.recordConflicts(nowUsefulVar, storeInst.addr());
+            }
+        }
     }
 
     public boolean addUsefulVar(HashSet<String> usefulVar) {

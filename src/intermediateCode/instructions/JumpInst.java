@@ -1,6 +1,7 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Inst;
 
 import java.util.ArrayList;
@@ -8,7 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record JumpInst(String label) implements Inst {
+public record JumpInst(int num, String label) implements Inst {
+
+    public JumpInst(String label) {
+        this(CodeGenerator.getInstNum(), label);
+    }
+
     @Override
     public String toString() {
         return "jump " + label;

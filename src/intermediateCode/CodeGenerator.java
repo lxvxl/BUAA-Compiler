@@ -18,8 +18,24 @@ public class CodeGenerator {
     private static final List<Inst> globalInsts = new ArrayList<>();
     private static final Map<String, String> constStrMap = new HashMap<>();
     private static int constStrNum = 0;
+    private static int instNum = 1;
+
+    public final static boolean OPTIMIZE = true;
+
+    public static int getInstNum() {
+        return instNum++;
+    }
 
     public static void optimize() {
+        MipsGenerator.addInst(".data");
+        for (Map.Entry<String, String> entry : constStrMap.entrySet()) {
+            MipsGenerator.addInst(String.format("%s: .asciiz \"%s\"", entry.getValue(), entry.getKey()));
+        }
+        for (Inst inst : globalInsts) {
+            inst.toMips();
+        }
+        MipsGenerator.addInst(".text");
+        MipsGenerator.addInst("j func_main");
         for (FuncCode funcCode : funcs) {
             funcCode.optimize();
         }

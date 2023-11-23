@@ -6,9 +6,15 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Inst;
 
-public record WordInst(String name, int size, List<String> initVals) implements Inst {
+public record WordInst(int num, String name, int size, List<String> initVals) implements Inst {
+
+    public WordInst(String name, int size, List<String> initVals) {
+        this(CodeGenerator.getInstNum(), name, size, initVals);
+    }
+
     @Override
     public String toString() {
         return String.format("@%s = word %s %s", name, size,

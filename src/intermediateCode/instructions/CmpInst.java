@@ -1,16 +1,22 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Computable;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
+import intermediateCode.optimize.RegAllocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record CmpInst(String op, String result, String para1, String para2) implements Inst, Computable {
+public record CmpInst(int num, String op, String result, String para1, String para2) implements Inst, Computable {
+
+    public CmpInst(String op, String result, String para1, String para2) {
+        this(CodeGenerator.getInstNum(), op, result, para1, para2);
+    }
 
     @Override
     public String toString() {
@@ -20,6 +26,10 @@ public record CmpInst(String op, String result, String para1, String para2) impl
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
+        if (CodeGenerator.OPTIMIZE) {
+            toMips2();
+            return;
+        }
         FrameMonitor.getParamVal(para1, "$t0");
         FrameMonitor.getParamVal(para2, "$t1");
         MipsGenerator.addInst("\tslt $t3, $t0, $t1");//t3 = t0 < t1
@@ -38,9 +48,43 @@ public record CmpInst(String op, String result, String para1, String para2) impl
         FrameMonitor.initParam(result, "$t2");
     }
 
+    private void toMips2() {
+        String para1Reg = RegAllocator.getParamVal(para1, num);
+        String para2Reg = RegAllocator.getParamVal(para2, num);
+        String resultReg = RegAllocator.getFreeReg(num, result);
+        switch (op) {
+            case "==" -> {
+                MipsGenerator.addInst(String.format("\tand %s, $0, $0", resultReg));
+                MipsGenerator.addInst(String.format("\tbne %s, %s, %s", para1Reg, para2Reg, "TEMP_LABEL" + num));
+                MipsGenerator.addInst(String.format("\tori %s, $0, 1", resultReg));
+                MipsGenerator.addInst("TEMP_LABEL" + num + ':');
+            }
+            case "!=" -> {
+                MipsGenerator.addInst(String.format("\tand %s, $0, $0", resultReg));
+                MipsGenerator.addInst(String.format("\tbeq %s, %s, %s", para1Reg, para2Reg, "TEMP_LABEL" + num));
+                MipsGenerator.addInst(String.format("\tori %s, %s, 1", resultReg, "$0"));
+                MipsGenerator.addInst("TEMP_LABEL" + num + ':');
+            }
+            case ">" -> MipsGenerator.addInst(String.format("\tslt %s, %s, %s", resultReg, para2Reg, para1Reg));
+            case "<" -> MipsGenerator.addInst(String.format("\tslt %s, %s, %s", resultReg, para1Reg, para2Reg));
+            case ">=" -> {
+                MipsGenerator.addInst(String.format("\tslt %s, %s, %s", resultReg, para1Reg, para2Reg));
+                MipsGenerator.addInst(String.format("\txori %s, %s, 1", resultReg, resultReg));
+            }
+            case "<=" -> {
+                MipsGenerator.addInst(String.format("\tslt %s, %s, %s", resultReg, para2Reg, para1Reg));
+                MipsGenerator.addInst(String.format("\txori %s, %s, 1", resultReg, resultReg));
+            }
+        }
+    }
+
     public void toMipsWithBr(BrInst br) {
         MipsGenerator.addInst('#' + toString());
         MipsGenerator.addInst('#' + br.toString());
+        if (CodeGenerator.OPTIMIZE) {
+            toMipsWithBr2(br);
+            return;
+        }
         FrameMonitor.getParamVal(para1, "$t0");
         FrameMonitor.getParamVal(para2, "$t1");
         switch (op) {
@@ -71,6 +115,46 @@ public record CmpInst(String op, String result, String para1, String para2) impl
                 MipsGenerator.addInst("\tslt $at, $t1, $t0");
                 MipsGenerator.addInst("\tbeq $at, $zero, " + br.trueLabel());
                 MipsGenerator.addInst("\tj  " + br.falseLabel());
+            }
+        }
+    }
+
+    private void toMipsWithBr2(BrInst br) {
+        if (!RegAllocator.isDisposableParam(result)) {
+            toMips2();
+            br.toMips();
+            return;
+        }
+        String para1Reg = RegAllocator.getParamVal(para1, num);
+        String para2Reg = RegAllocator.getParamVal(para2, num);
+        switch (op) {
+            case "==" -> {
+                MipsGenerator.addInst(String.format("\tbne %s, %s, %s", para1Reg, para2Reg, br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
+            }
+            case "!=" -> {
+                MipsGenerator.addInst(String.format("\tbeq %s, %s, %s", para1Reg, para2Reg, br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
+            }
+            case ">" -> {
+                MipsGenerator.addInst(String.format("\tslt $at, %s, %s", para2Reg, para1Reg));
+                MipsGenerator.addInst(String.format("\tbeq $at, $0, %s", br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
+            }
+            case "<" -> {
+                MipsGenerator.addInst(String.format("\tslt $at, %s, %s", para1Reg, para2Reg));
+                MipsGenerator.addInst(String.format("\tbeq $at, $0, %s", br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
+            }
+            case ">=" -> {
+                MipsGenerator.addInst(String.format("\tslt $at, %s, %s", para1Reg, para2Reg));
+                MipsGenerator.addInst(String.format("\tbne $at, $0, %s", br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
+            }
+            case "<=" -> {
+                MipsGenerator.addInst(String.format("\tslt $at, %s, %s", para2Reg, para1Reg));
+                MipsGenerator.addInst(String.format("\tbne $at, $0, %s", br.falseLabel()));
+                MipsGenerator.addInst("\tj " + br.trueLabel());
             }
         }
     }

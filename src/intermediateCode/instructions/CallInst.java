@@ -9,10 +9,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
+import intermediateCode.optimize.StackAlloactor;
 
-public record CallInst(String result, String funcName, List<String> params) implements Inst {
+public record CallInst(int num, String result, String funcName, List<String> params) implements Inst {
+    public CallInst(String result, String funcName, List<String> params) {
+        this(CodeGenerator.getInstNum(), result, funcName, params);
+    }
+
     @Override
     public String toString() {
         if (result == null) {
@@ -24,7 +30,11 @@ public record CallInst(String result, String funcName, List<String> params) impl
 
     @Override
     public void toMips() {
-        MipsGenerator.addInst('#' + toString());
+        MipsGenerator.addInst("#" + num + " " + toString());
+        if (CodeGenerator.OPTIMIZE) {
+            StackAlloactor.dealCallInst(this);
+            return;
+        }
         List<String> curEnv = Stream.of("$fp", "$ra").toList();
         int curBottom = FrameMonitor.storeEnv(curEnv);
         for (int i = 0; i < params.size(); i++) {

@@ -1,16 +1,23 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Computable;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
+import intermediateCode.optimize.RegAllocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record ModInst(String result, String para1, String para2) implements Inst, Computable {
+public record ModInst(int num, String result, String para1, String para2) implements Inst, Computable {
+
+    public ModInst(String result, String para1, String para2) {
+        this(CodeGenerator.getInstNum(), result, para1, para2);
+    }
+
     @Override
     public String toString() {
         return String.format("%s = mod %s %s", result, para1, para2);
@@ -19,6 +26,14 @@ public record ModInst(String result, String para1, String para2) implements Inst
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
+        if (CodeGenerator.OPTIMIZE) {
+            String resultReg = RegAllocator.getFreeReg(num, result);
+            String para1Reg = RegAllocator.getParamVal(para1, num);
+            String para2Reg = RegAllocator.getParamVal(para2, num);
+            MipsGenerator.addInst(String.format("\tdiv %s, %s", para1Reg, para2Reg));
+            MipsGenerator.addInst("\tmfhi " + resultReg);
+            return;
+        }
         FrameMonitor.getParamVal(para1, "$t0");
         FrameMonitor.getParamVal(para2, "$t1");
         MipsGenerator.addInst("\tdiv $t0, $t1");

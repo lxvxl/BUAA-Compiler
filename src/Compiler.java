@@ -15,16 +15,21 @@ public class Compiler {
         //LexicalAnalyser lexicalAnalyser = new LexicalAnalyser(reader);
         //Logger.open();
 
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("error.txt"));
+
         LexicalManager lm = new LexicalManager("testfile.txt");
         TreeNode root = CompUnit.parse(lm);
         root.compile();
-        ErrorHandler.outputErrors(bufferedWriter);
+        if (ErrorHandler.hasErrors()) {
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("error.txt"));
+            ErrorHandler.outputErrors(bufferedWriter);
+            bufferedWriter.close();
+            return;
+        }
         CodeGenerator.optimize();
-        CodeGenerator.output();
-        CodeGenerator.toMips();
+        //CodeGenerator.output();
+        //CodeGenerator.toMips();
         MipsGenerator.outputInsts();
-        bufferedWriter.close();
+        throw new RuntimeException();
     }
 
 }

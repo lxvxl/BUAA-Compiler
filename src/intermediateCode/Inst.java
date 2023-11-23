@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface Inst {
+    int count = 0;
+
     void toMips();
     List<String> usedReg();
     List<String> getParams();
     Inst generateEquivalentInst(HashMap<String, String> regMap);
     String getResult();
+    int num();
 
     static String getEquivalentReg(HashMap<String, String> regMap, String param) {
         while (regMap.containsKey(param) && param != null && !param.equals(regMap.get(param))) {
@@ -42,5 +45,14 @@ public interface Inst {
 
     static boolean isTempParam(String param) {
         return !isInt(param) && !isGlobalParam(param) && !isStackParam(param);
+    }
+
+    static boolean isImmediate(String param) {
+        try{
+            Short.parseShort(param);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

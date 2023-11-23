@@ -1,14 +1,21 @@
 package intermediateCode.instructions;
 
 import Writer.MipsGenerator;
+import intermediateCode.CodeGenerator;
 import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
+import intermediateCode.optimize.RegAllocator;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record RetInst(String ret) implements Inst {
+public record RetInst(int num, String ret) implements Inst {
+
+    public RetInst(String ret) {
+        this(CodeGenerator.getInstNum(), ret);
+    }
+
     @Override
     public String toString() {
         return String.format("ret %s", ret == null ? "" : ret);
@@ -17,6 +24,15 @@ public record RetInst(String ret) implements Inst {
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
+        if (CodeGenerator.OPTIMIZE) {
+            if (ret != null) {
+                String resultReg = RegAllocator.getParamVal(ret, num);
+                MipsGenerator.addInst("\tmove $v0, " + resultReg);
+            }
+            MipsGenerator.addInst("\tmove $sp, $fp");
+            MipsGenerator.addInst("\tjr $ra");
+            return;
+        }
         if (ret != null) {
             FrameMonitor.getParamVal(ret, "$v0");
         }

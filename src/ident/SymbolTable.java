@@ -31,16 +31,19 @@ public class SymbolTable {
             isAdvanceBlockIn = false;
             return;
         }
+        //System.out.println("Block In!");
         tableStack.addFirst(new HashMap<>());
     }
 
     public static void advanceBlockIn() {
+        //System.out.println("Block In!");
         tableStack.addFirst(new HashMap<>());
         isAdvanceBlockIn = true;
     }
 
     public static void blockOut() {
         tableStack.removeFirst();
+        //System.out.println("Block Out!");
     }
 
     /**
