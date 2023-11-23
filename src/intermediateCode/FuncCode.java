@@ -24,7 +24,7 @@ public record FuncCode(String name, List<Inst> insts) {
         HashMap<String, BasicBlock> labelToBlock = new HashMap<>();
         List<BasicBlock> basicBlocks = new ArrayList<>();
         generateBasicBlocks(basicBlocks, labelToBlock);
-        insts.clear();
+        //insts.clear();
         //dag优化
         for (BasicBlock block : basicBlocks) {
             block.dagOptimize();
@@ -52,9 +52,13 @@ public record FuncCode(String name, List<Inst> insts) {
         Func func = (Func) SymbolTable.searchIdent(name);
         RegAllocator.dealFuncParamConflict(func.getParams().stream().map(Var::getAddrReg).toList());
 
+        insts.clear();
         basicBlocks.forEach(b -> insts.addAll(b.getInsts()));
         output();
         RegAllocator.allocateGlobalReg();
+        /*if (true) {
+            throw new RuntimeException();
+        }*/
         toMips2(basicBlocks);
     }
 

@@ -189,34 +189,40 @@ public class RegAllocator {
 
     public static void allocateGlobalReg() {
         //去除冲突变量中的没有被引用计数记录的变量。这些变量可能是混进来的全局变量
+        System.out.println("开始分配寄存器");
         paramConflicts.entrySet().removeIf(entry -> !paramRefCount.containsKey(entry.getKey()));
-
         final List<String> globalRegs = Stream.of("$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7").toList();
         List<String> paramList = new ArrayList<>();
-        Set<String> stackList = new HashSet<>();
+        Set<String> paramSet = new HashSet<>();
+        Set<String> stackSet = new HashSet<>();
         //逐步将变量从图中删去
-        while (paramList.size() + stackList.size() != paramConflicts.size()) {
+        while (paramSet.size() + stackSet.size() != paramConflicts.size()) {
             boolean isDelete = false;
             for (String param : paramConflicts.keySet()) {
-                if (paramList.contains(param) || stackList.contains(param)) {
+                if (paramSet.contains(param) || stackSet.contains(param)) {
                     continue;
                 }
                 Set<String> conflicts = paramConflicts.get(param);
                 int degrees = (int) conflicts.stream()
-                        .filter(p -> !paramList.contains(p) && !stackList.contains(p))
+                        .filter(p -> !paramSet.contains(p) && !stackSet.contains(p))
                         .count();
                 if (degrees < globalRegs.size()) {
                     paramList.add(param);
+                    paramSet.add(param);
                     isDelete = true;
+                    System.out.println("将寄存器" + param + "分配为全局寄存器");
                 }
             }
             if (!isDelete) {
                 String minRefParam = paramConflicts.keySet().stream()
+                        .filter(p -> !paramSet.contains(p) && !stackSet.contains(p))
                         .min(Comparator.comparingInt(paramRefCount::get))
                         .get();
-                stackList.add(minRefParam);
+                stackSet.add(minRefParam);
+                System.out.println("将寄存器" + minRefParam + "分配在栈上");
             }
         }
+        System.out.println("中间代码寄存器分配完毕");
         //进行寄存器分配
         Set<String> unusedGlobalRegs = new HashSet<>(globalRegs);
         for (int i = paramList.size() - 1; i >= 0; i--) {
@@ -225,7 +231,6 @@ public class RegAllocator {
                     .filter(r -> paramConflicts.get(param).stream()
                             .noneMatch(p -> r.equals(globalRegsAlloc.get(p))))
                     .findFirst();
-            assert reg.isPresent();
             globalRegsAlloc.put(param, reg.get());
             unusedGlobalRegs.remove(reg.get());
         }
