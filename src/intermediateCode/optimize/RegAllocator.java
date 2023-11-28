@@ -65,11 +65,50 @@ public class RegAllocator {
         }
     }
 
+
     /**
-     * 如果一个栈变量被保存在寄存器中，返回这个寄存器。否则，返回null
+     * 尝试从addr处取出值时，如果这个addr对应一个全局寄存器，就将结果与这个全局寄存器对应起来。
      */
-    public static String getStackParamReg(String addr) {
-        return globalRegsAlloc.get(addr);
+    public static boolean bindTempParamWithGlobalReg(String addr, String resultParam) {
+        String addrReg = globalRegsAlloc.get(addr);
+        if (addrReg == null) {
+            return false;
+        }
+        paramsInReg.put(resultParam, addrReg);
+        return true;
+    }
+
+    public static boolean saveValueInGlobalReg(String addr, String valParam, int lineNum) {
+        String addrReg = globalRegsAlloc.get(addr);
+        if (addrReg == null) {
+            return false;
+        }
+
+        Set<String> replacedParam = new HashSet<>();
+        Set<String> removedParam = new HashSet<>();
+        paramsInReg.entrySet().stream()
+                .filter(e -> e.getValue().equals(addrReg))
+                .forEach(e -> {
+                    String boundParam = e.getKey();
+                    if (paramUsage.get(boundParam).higher(lineNum - 1) == null) {
+                        removedParam.add(boundParam);
+                    } else {
+                        replacedParam.add(boundParam);
+                    }
+                });
+        removedParam.forEach(paramsInReg::remove);
+        replacedParam.forEach(boundParam -> {
+            String newReg = getFreeReg(lineNum, boundParam);
+            MipsGenerator.addInst(String.format("\tmove %s, %s", newReg, addrReg));
+        });
+
+        if (Inst.isInt(valParam)) {
+            MipsGenerator.addInst(String.format("\tli %s, %s", addrReg, valParam));
+        } else {
+            String valReg = getParamVal(valParam, lineNum);
+            MipsGenerator.addInst(String.format("\tmove %s, %s", addrReg, valReg));
+        }
+        return true;
     }
 
     /**
@@ -135,7 +174,9 @@ public class RegAllocator {
             Map.Entry<String, String> entry = iterator.next();
             if (paramUsage.get(entry.getKey()).higher(lineNum - 1) == null) {
                 iterator.remove();
-                freeTempReg.add(entry.getValue());
+                if (!globalRegsAlloc.containsValue(entry.getValue())) {
+                    freeTempReg.add(entry.getValue());
+                }
             }
         }
     }
@@ -148,7 +189,9 @@ public class RegAllocator {
             String reg = entry.getValue();
             if (!Inst.isTempParam(param) && !paramUsage.get(param).contains(lineNum)) {
                 iterator.remove();
-                freeTempReg.add(reg);
+                if (!globalRegsAlloc.containsValue(reg)) {
+                    freeTempReg.add(reg);
+                }
             }
         }
     }
@@ -175,6 +218,7 @@ public class RegAllocator {
 
     public static void clearTempReg() {
         freeTempReg.addAll(paramsInReg.values());
+        freeTempReg.removeIf(globalRegsAlloc::containsValue);
         paramsInReg.clear();
     }
 

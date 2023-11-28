@@ -36,22 +36,23 @@ public record StoreInst(int num, String val, String addr, int offset, String arr
     }
 
     private void toMips2() {
+        //如果这个地址与一个全局寄存器绑定起来了
+        if (RegAllocator.saveValueInGlobalReg(addr, val, num)) {
+            return;
+        }
+        //如果是全局变量
         if (Inst.isGlobalParam(addr)) {
             //先判断是否是全局变量
             MipsGenerator.addInst(String.format("\tsw %s, g_%s + %d", RegAllocator.getParamVal(val, num), addr.substring(1), offset));
             return;
         }
-        //判断这个变量是否作为寄存器在使用
-        String addrReg = RegAllocator.getStackParamReg(addr);
-        if (addrReg != null) {
-            MipsGenerator.addInst(String.format("\tmove %s, %s", addrReg, RegAllocator.getParamVal(val, num)));
-            return;
-        }
+        //如果是一个局部变量
         if (Inst.isStackParam(addr)) {
             StackAlloactor.storeAtAddr(RegAllocator.getParamVal(val, num), addr, offset);
             return;
         }
-        addrReg = RegAllocator.getParamVal(addr, num);
+        //如果是一个临时变量
+        String addrReg = RegAllocator.getParamVal(addr, num);
         MipsGenerator.addInst(String.format("\tsw %s, %d(%s)", RegAllocator.getParamVal(val, num), offset, addrReg));
     }
 
