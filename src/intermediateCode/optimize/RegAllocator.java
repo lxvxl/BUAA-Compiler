@@ -39,10 +39,10 @@ public class RegAllocator {
             return result;
         } else if (Inst.isGlobalParam(param)) {
             if (paramsInReg.containsKey(param)) {
-                paramUsage.put(param, new TreeSet<>(){{add(lineNum);}});
+                //paramUsage.put(param, new TreeSet<>(){{add(lineNum);}});
                 return paramsInReg.get(param);
             }
-            paramUsage.put(param, new TreeSet<>(){{add(lineNum);}});//为了在getFreeReg中及时将其释放掉
+            //paramUsage.put(param, new TreeSet<>(){{add(lineNum);}});//为了在getFreeReg中及时将其释放掉
             String result = getFreeReg(lineNum, param);
             MipsGenerator.addInst(String.format("\tla %s, g_%s", result, param.substring(1)));
             return result;
@@ -75,10 +75,34 @@ public class RegAllocator {
     /**
      * 为变量申请一个空闲的寄存器
      */
-    public static String getFreeReg(int lineNum, String param) {
+    public static String getFreeReg(int lineNum, String newParam) {
         if (freeTempReg.isEmpty()) {
             clearInvalidRegs(lineNum);
         }
+
+        if (freeTempReg.isEmpty()) {
+            Optional<String> freeParam = paramsInReg.keySet().stream()
+                    .filter(p -> !Inst.isTempParam(p))
+                    .filter(p -> !paramUsage.get(p).contains(lineNum))
+                    .max((o1, o2) -> {
+                        Integer nextUsed1 = paramUsage.get(o1).higher(lineNum - 1);
+                        Integer nextUsed2 = paramUsage.get(o2).higher(lineNum - 1);
+                        if (nextUsed1 == null) {
+                            return 1;
+                        } else if (nextUsed2 == null) {
+                            return  -1;
+                        } else {
+                            return nextUsed1 - nextUsed2;
+                        }
+                    });
+            if (freeParam.isPresent()) {
+                String freeReg = paramsInReg.get(freeParam.get());
+                paramsInReg.remove(freeParam.get());
+                paramsInReg.put(newParam, freeReg);
+                return freeReg;
+            }
+        }
+
         if (freeTempReg.isEmpty()) {
             String removeParam = paramsInReg.keySet().stream()
                     .filter(Inst::isTempParam)
@@ -96,12 +120,12 @@ public class RegAllocator {
             String reg = paramsInReg.get(removeParam);
             paramsInReg.remove(removeParam);
             StackAlloactor.saveVal(removeParam, reg);
-            paramsInReg.put(param, reg);
+            paramsInReg.put(newParam, reg);
             return reg;
         }
         String reg = freeTempReg.iterator().next();
         freeTempReg.remove(reg);
-        paramsInReg.put(param, reg);
+        paramsInReg.put(newParam, reg);
         return reg;
     }
 
@@ -112,6 +136,19 @@ public class RegAllocator {
             if (paramUsage.get(entry.getKey()).higher(lineNum - 1) == null) {
                 iterator.remove();
                 freeTempReg.add(entry.getValue());
+            }
+        }
+    }
+
+    private static void removeCheapRegs(int lineNum) {
+        Iterator<Map.Entry<String, String>> iterator = paramsInReg.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            String param = entry.getKey();
+            String reg = entry.getValue();
+            if (!Inst.isTempParam(param) && !paramUsage.get(param).contains(lineNum)) {
+                iterator.remove();
+                freeTempReg.add(reg);
             }
         }
     }
@@ -243,6 +280,7 @@ public class RegAllocator {
 
     public static List<String> getUsedRegs(CallInst callInst) {
         clearInvalidRegs(callInst.num());
+        removeCheapRegs(callInst.num());
         return Stream.of("$v1",
                 "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7", "$t8", "$t9",
                 "$s0", "$s1", "$s2", "$s3","$s4", "$s5","$s6", "$s7",

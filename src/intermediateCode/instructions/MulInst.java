@@ -33,7 +33,7 @@ public record MulInst(int num, String result, String para1, String para2) implem
             int n = Integer.parseInt(para1);
             if ((n > 0) && ((n & (n - 1)) == 0)) {
                 FrameMonitor.getParamVal(para2, "$t0");
-                MipsGenerator.addInst(String.format("\tsll $t2, $t0, %d", (int)(Math.log(n) / Math.log(2))));
+                MipsGenerator.addInst(String.format("\tsll $t2, $t0, %d", Math.round(Math.log(n) / Math.log(2))));
                 FrameMonitor.initParam(result, "$t2");
                 return;
             }
@@ -42,7 +42,7 @@ public record MulInst(int num, String result, String para1, String para2) implem
             int n = Integer.parseInt(para2);
             if ((n > 0) && ((n & (n - 1)) == 0)) {
                 FrameMonitor.getParamVal(para1, "$t0");
-                MipsGenerator.addInst(String.format("\tsll $t2, $t0, %d", (int)(Math.log(n) / Math.log(2))));
+                MipsGenerator.addInst(String.format("\tsll $t2, $t0, %d", Math.round(Math.log(n) / Math.log(2))));
                 FrameMonitor.initParam(result, "$t2");
                 return;
             }
@@ -60,7 +60,7 @@ public record MulInst(int num, String result, String para1, String para2) implem
             int n = Integer.parseInt(para1);
             if ((n > 0) && ((n & (n - 1)) == 0)) {
                 String para2Reg = RegAllocator.getParamVal(para2, num);
-                MipsGenerator.addInst(String.format("\tsll %s, %s, %d", resultReg, para2Reg, (int)(Math.log(n) / Math.log(2))));
+                MipsGenerator.addInst(String.format("\tsll %s, %s, %d", resultReg, para2Reg, Math.round(Math.log(n) / Math.log(2))));
                 return;
             }
         } catch (Exception ignored) {}
@@ -68,7 +68,7 @@ public record MulInst(int num, String result, String para1, String para2) implem
             int n = Integer.parseInt(para2);
             if ((n > 0) && ((n & (n - 1)) == 0)) {
                 String para1Reg = RegAllocator.getParamVal(para1, num);
-                MipsGenerator.addInst(String.format("\tsll %s, %s, %d", resultReg, para1Reg, (int)(Math.log(n) / Math.log(2))));
+                MipsGenerator.addInst(String.format("\tsll %s, %s, %d", resultReg, para1Reg, Math.round(Math.log(n) / Math.log(2))));
                 return;
             }
         } catch (Exception ignored) {}
@@ -102,6 +102,12 @@ public record MulInst(int num, String result, String para1, String para2) implem
     public String getSpecificResult() {
         if (Inst.isInt(para1) && Inst.isInt(para2)) {
             return Integer.toString(Integer.parseInt(para1) * Integer.parseInt(para2));
+        } else if (para1.equals("0") || para2.equals("0")) {
+            return "0";
+        } else if (para1.equals("1")) {
+            return para2;
+        } else if (para2.equals("1")) {
+            return para1;
         } else {
             return null;
         }

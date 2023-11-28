@@ -24,6 +24,7 @@ public class Compiler {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("error.txt"));
             ErrorHandler.outputErrors(bufferedWriter);
             bufferedWriter.close();
+            System.out.println("出现错误");
             return;
         }
         CodeGenerator.optimize();

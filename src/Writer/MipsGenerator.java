@@ -19,10 +19,10 @@ public class MipsGenerator {
             insts.add(label);
             return;
         }
-        String preInst = insts.get(insts.size() - 1);
+        String preInst = insts.get(insts.size() - 2).trim();
         if (preInst.charAt(0) == 'j' && preInst.charAt(1) == ' ') {
             if (preInst.split(" ")[1].equals(label.substring(0, label.length() - 1))) {
-                insts.remove(insts.size() - 1);
+                insts.remove(insts.size() - 2);
             }
         }
         insts.add(label);

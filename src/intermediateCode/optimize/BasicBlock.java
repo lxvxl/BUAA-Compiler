@@ -106,26 +106,6 @@ public class BasicBlock {
         this.insts = newInsts;
     }
 
-    public void removeRepeatedStore() {
-        addrRecords.clear();
-        for (int i = insts.size() - 1; i >= 0; i--) {
-            if (insts.get(i) instanceof StoreInst storeInst) {
-                ParamAddr paramAddr = addrRecords.stream()
-                        .filter(p -> p.addr().equals(storeInst.addr())
-                                && p.offset == storeInst.offset())
-                        .findFirst()
-                        .orElse(null);
-                if (paramAddr == null) {
-                    if (storeInst.addr().charAt(0) != '@' && !storeInst.isArray()) {
-                        addrRecords.add(new ParamAddr(storeInst.addr(), storeInst.offset(), storeInst.val(), false));
-                    }
-                } else {
-                    insts.remove(i);
-                }
-            }
-        }
-    }
-
     /**
      * 尝试重新生成入口有用变量。返回是否有所改变
      */
@@ -165,9 +145,6 @@ public class BasicBlock {
                         nowUsefulVar.add(storeInst.addr());
                         nowUsefulVar.add(storeInst.arrName());
                     }
-                    /*if (Inst.isTempParam(storeInst.addr())) {
-                        nowUsefulVar.add(storeInst.addr());
-                    }*/
                 } else if (storeInst.isArray() && nowUsefulVar.contains(storeInst.arrName())) {
                     //如果存储是数组，且数组是有用的
                     nowUsefulVar.add(storeInst.val());

@@ -72,6 +72,8 @@ public record SubInst(int num, String result, String para1, String para2) implem
     public String getSpecificResult() {
         if (Inst.isInt(para1) && Inst.isInt(para2)) {
             return Integer.toString(Integer.parseInt(para1) - Integer.parseInt(para2));
+        } else if (para2.equals("0")) {
+            return para1;
         } else {
             return null;
         }
