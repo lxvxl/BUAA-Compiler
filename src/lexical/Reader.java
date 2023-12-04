@@ -21,7 +21,7 @@ public class Reader {
         }
     }
 
-    public char getChar() throws StringIndexOutOfBoundsException {
+    public char getChar() {
         if (p == content.length()) {
             return '\0';
         }

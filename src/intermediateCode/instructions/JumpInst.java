@@ -9,12 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record JumpInst(int num, String label) implements Inst {
-
-    public JumpInst(String label) {
-        this(CodeGenerator.getInstNum(), label);
-    }
-
+public record JumpInst(String label) implements Inst {
     @Override
     public String toString() {
         return "jump " + label;
@@ -44,5 +39,20 @@ public record JumpInst(int num, String label) implements Inst {
     @Override
     public String getResult() {
         return null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new JumpInst(Inst.transformLabel(label, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

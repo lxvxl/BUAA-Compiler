@@ -8,12 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public record PutStrInst(int num, String label) implements Inst {
-
-    public PutStrInst(String label) {
-        this(CodeGenerator.getInstNum(), label);
-    }
-
+public record PutStrInst(String label) implements Inst {
     @Override
     public String toString() {
         return String.format("putstr %s", label);
@@ -45,5 +40,20 @@ public record PutStrInst(int num, String label) implements Inst {
     @Override
     public String getResult() {
         return null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new PutStrInst(label);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

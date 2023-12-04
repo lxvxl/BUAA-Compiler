@@ -14,11 +14,7 @@ import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 import intermediateCode.optimize.StackAlloactor;
 
-public record CallInst(int num, String result, String funcName, List<String> params) implements Inst {
-    public CallInst(String result, String funcName, List<String> params) {
-        this(CodeGenerator.getInstNum(), result, funcName, params);
-    }
-
+public record CallInst(String result, String funcName, List<String> params) implements Inst {
     @Override
     public String toString() {
         if (result == null) {
@@ -30,7 +26,7 @@ public record CallInst(int num, String result, String funcName, List<String> par
 
     @Override
     public void toMips() {
-        MipsGenerator.addInst("#" + num + " " + toString());
+        MipsGenerator.addInst("#" + num() + " " + toString());
         if (CodeGenerator.OPTIMIZE) {
             StackAlloactor.dealCallInst(this);
             return;
@@ -72,6 +68,23 @@ public record CallInst(int num, String result, String funcName, List<String> par
     @Override
     public String getResult() {
         return result;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new CallInst(Inst.transformParam(result, n, funcName),
+                this.funcName,
+                params.stream().map(p -> Inst.transformParam(p, n, funcName)).toList());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 

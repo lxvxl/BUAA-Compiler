@@ -7,16 +7,12 @@ import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 import intermediateCode.optimize.RegAllocator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record CmpInst(int num, String op, String result, String para1, String para2) implements Inst, Computable {
+public record CmpInst(String op, String result, String para1, String para2) implements Inst, Computable {
 
-    public CmpInst(String op, String result, String para1, String para2) {
-        this(CodeGenerator.getInstNum(), op, result, para1, para2);
-    }
 
     @Override
     public String toString() {
@@ -49,6 +45,7 @@ public record CmpInst(int num, String op, String result, String para1, String pa
     }
 
     private void toMips2() {
+        int num = num();
         String para1Reg = RegAllocator.getParamVal(para1, num);
         String para2Reg = RegAllocator.getParamVal(para2, num);
         String resultReg = RegAllocator.getFreeReg(num, result);
@@ -120,6 +117,7 @@ public record CmpInst(int num, String op, String result, String para1, String pa
     }
 
     private void toMipsWithBr2(BrInst br) {
+        int num = num();
         if (!RegAllocator.isDisposableParam(result)) {
             toMips2();
             br.toMips();
@@ -202,5 +200,23 @@ public record CmpInst(int num, String op, String result, String para1, String pa
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new CmpInst(op,
+                Inst.transformParam(result, n, funcName),
+                Inst.transformParam(para1, n, funcName),
+                Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

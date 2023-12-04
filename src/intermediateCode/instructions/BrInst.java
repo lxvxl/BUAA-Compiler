@@ -11,11 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record BrInst(int num, String reg, String trueLabel, String falseLabel) implements Inst {
-
-    public BrInst(String reg, String trueLabel, String falseLabel) {
-        this(CodeGenerator.getInstNum(), reg, trueLabel, falseLabel);
-    }
+public record BrInst(String reg, String trueLabel, String falseLabel) implements Inst {
 
     @Override
     public String toString() {
@@ -26,7 +22,7 @@ public record BrInst(int num, String reg, String trueLabel, String falseLabel) i
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
         if (CodeGenerator.OPTIMIZE) {
-            String val = RegAllocator.getParamVal(reg, num);
+            String val = RegAllocator.getParamVal(reg, num());
             MipsGenerator.addInst(String.format("\tbeq %s, $0, %s", val, falseLabel));
             MipsGenerator.addInst("\tj " + trueLabel);
             return;
@@ -54,5 +50,22 @@ public record BrInst(int num, String reg, String trueLabel, String falseLabel) i
     @Override
     public String getResult() {
         return null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new BrInst(Inst.transformParam(reg, n, funcName),
+                Inst.transformLabel(trueLabel, n, funcName),
+                Inst.transformLabel(falseLabel, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

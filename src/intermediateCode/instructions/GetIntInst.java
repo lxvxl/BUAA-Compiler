@@ -11,12 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record GetIntInst(int num, String result) implements Inst {
-
-    public GetIntInst(String result) {
-        this(CodeGenerator.getInstNum(), result);
-    }
-
+public record GetIntInst(String result) implements Inst {
     @Override
     public String toString() {
         return String.format("%s = getint()", result);
@@ -28,6 +23,7 @@ public record GetIntInst(int num, String result) implements Inst {
         MipsGenerator.addInst("\tli $v0, 5");
         MipsGenerator.addInst("\tsyscall");
         if (CodeGenerator.OPTIMIZE) {
+            int num = num();
             MipsGenerator.addInst(String.format("\tmove %s, $v0", RegAllocator.getFreeReg(num, result)));
             return;
         }
@@ -52,5 +48,20 @@ public record GetIntInst(int num, String result) implements Inst {
     @Override
     public String getResult() {
         return result;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new GetIntInst(Inst.transformParam(result, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

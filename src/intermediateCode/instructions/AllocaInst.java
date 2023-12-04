@@ -11,11 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public record AllocaInst(int num, String result, int size, boolean isArray) implements Inst {
-
-    public AllocaInst(String result, int size, boolean isArray) {
-        this(CodeGenerator.getInstNum(), result, size, isArray);
-    }
+public record AllocaInst(String result, int size, boolean isArray) implements Inst {
 
     @Override
     public String toString() {
@@ -50,5 +46,20 @@ public record AllocaInst(int num, String result, int size, boolean isArray) impl
     @Override
     public String getResult() {
         return result;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new AllocaInst(Inst.transformParam(result, n, funcName), size, isArray);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

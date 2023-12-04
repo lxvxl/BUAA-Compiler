@@ -11,12 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record MulInst(int num, String result, String para1, String para2) implements Inst, Computable {
-
-    public MulInst(String result, String para1, String para2) {
-        this(CodeGenerator.getInstNum(), result, para1, para2);
-    }
-
+public record MulInst(String result, String para1, String para2) implements Inst, Computable {
     @Override
     public String toString() {
         return String.format("%s = mul %s %s", result, para1, para2);
@@ -55,6 +50,7 @@ public record MulInst(int num, String result, String para1, String para2) implem
     }
 
     private void toMips2() {
+        int num = num();
         String resultReg = RegAllocator.getFreeReg(num, result);
         try{
             int n = Integer.parseInt(para1);
@@ -111,6 +107,23 @@ public record MulInst(int num, String result, String para1, String para2) implem
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new MulInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(para1, n, funcName),
+                Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 

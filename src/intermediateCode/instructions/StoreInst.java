@@ -10,17 +10,13 @@ import intermediateCode.optimize.StackAlloactor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-public record StoreInst(int num, String val, String addr, int offset, String arrName, boolean isGlobalArea) implements Inst {
-
-    public StoreInst(String val, String addr, int offset, String arrName, boolean isGlobalArea) {
-        this(CodeGenerator.getInstNum(), val, addr, offset, arrName, isGlobalArea);
-    }
-
+public record StoreInst(String val, String addr, int offset, String arrName, boolean isGlobalArea) implements Inst {
     @Override
     public String toString() {
-        return String.format("store %s, %s, %s", val, addr, offset);
+        return String.format("store %s, %s, %s    //arrName=%s", val, addr, offset, arrName);
     }
 
     @Override
@@ -36,6 +32,7 @@ public record StoreInst(int num, String val, String addr, int offset, String arr
     }
 
     private void toMips2() {
+        int num = num();
         //如果这个地址与一个全局寄存器绑定起来了
         if (RegAllocator.saveValueInGlobalReg(addr, val, num)) {
             return;
@@ -68,7 +65,11 @@ public record StoreInst(int num, String val, String addr, int offset, String arr
 
     @Override
     public Inst generateEquivalentInst(HashMap<String, String> regMap) {
-        return new StoreInst(Inst.getEquivalentReg(regMap, val), Inst.getEquivalentReg(regMap, addr), offset, arrName, isGlobalArea);
+        return new StoreInst(Inst.getEquivalentReg(regMap, val),
+                Inst.getEquivalentReg(regMap, addr),
+                offset,
+                Inst.getEquivalentReg(regMap, arrName),
+                isGlobalArea);
     }
 
     @Override
@@ -78,6 +79,34 @@ public record StoreInst(int num, String val, String addr, int offset, String arr
 
     public boolean isArray() {
         return arrName != null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new StoreInst(Inst.transformParam(val, n, funcName),
+                Inst.transformParam(addr, n, funcName),
+                offset,
+                Inst.transformParam(arrName, n, funcName),
+                Inst.isGlobalParam(addr));
+    }
+
+    public Inst replace(int n, String funcName, Map<String, String> arrMap) {
+        String newArrName = Inst.transformArrName(arrName, n, funcName, arrMap);
+        return new StoreInst(Inst.transformParam(val, n, funcName),
+                Inst.transformParam(addr, n, funcName),
+                offset,
+                newArrName,
+                Inst.isGlobalParam(newArrName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 

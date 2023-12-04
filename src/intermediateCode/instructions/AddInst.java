@@ -12,17 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record AddInst(int num, String result, String para1, String para2) implements Inst, Computable {
-
-    public AddInst(String result, String para1, String para2) {
-        this(CodeGenerator.getInstNum(), result, para1, para2);
-    }
+public record AddInst(String result, String para1, String para2) implements Inst, Computable {
 
     @Override
     public String toString() {
         return String.format("%s = add %s %s", result, para1, para2);
     }
-
 
     @Override
     public void toMips() {
@@ -52,18 +47,18 @@ public record AddInst(int num, String result, String para1, String para2) implem
     }
 
     private void toMips2() {
-        String freeReg = RegAllocator.getFreeReg(num, result);
+        String freeReg = RegAllocator.getFreeReg(num(), result);
         if (Inst.isImmediate(para1)) {
             short a = Short.parseShort(para1);
-            String para2Reg = RegAllocator.getParamVal(para2, num);
+            String para2Reg = RegAllocator.getParamVal(para2, num());
             MipsGenerator.addInst(String.format("\taddiu %s, %s, %d", freeReg, para2Reg, a));
         } else if (Inst.isImmediate(para2)) {
             short a = Short.parseShort(para2);
-            String para1Reg = RegAllocator.getParamVal(para1, num);
+            String para1Reg = RegAllocator.getParamVal(para1, num());
             MipsGenerator.addInst(String.format("\taddiu %s, %s, %d", freeReg, para1Reg, a));
         } else {
-            String para1Reg = RegAllocator.getParamVal(para1, num);
-            String para2Reg = RegAllocator.getParamVal(para2, num);
+            String para1Reg = RegAllocator.getParamVal(para1, num());
+            String para2Reg = RegAllocator.getParamVal(para2, num());
             MipsGenerator.addInst(String.format("\taddu %s, %s ,%s", freeReg, para2Reg, para1Reg));
         }
     }
@@ -99,5 +94,22 @@ public record AddInst(int num, String result, String para1, String para2) implem
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new AddInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(para1, n, funcName),
+                Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

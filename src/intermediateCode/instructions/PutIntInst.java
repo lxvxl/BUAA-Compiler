@@ -11,12 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record PutIntInst(int num, String n) implements Inst {
-
-    public PutIntInst(String n) {
-        this(CodeGenerator.getInstNum(), n);
-    }
-
+public record PutIntInst(String n) implements Inst {
     @Override
     public String toString() {
         return String.format("putint %s", n);
@@ -26,7 +21,7 @@ public record PutIntInst(int num, String n) implements Inst {
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
         if (CodeGenerator.OPTIMIZE) {
-            String resultReg = RegAllocator.getParamVal(n, num);
+            String resultReg = RegAllocator.getParamVal(n, num());
             MipsGenerator.addInst("\tmove $a0, " + resultReg);
             MipsGenerator.addInst("\tli $v0, 1");
             MipsGenerator.addInst("\tsyscall");
@@ -55,5 +50,20 @@ public record PutIntInst(int num, String n) implements Inst {
     @Override
     public String getResult() {
         return null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new PutIntInst(Inst.transformParam(this.n, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

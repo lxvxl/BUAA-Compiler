@@ -10,12 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record RetInst(int num, String ret) implements Inst {
-
-    public RetInst(String ret) {
-        this(CodeGenerator.getInstNum(), ret);
-    }
-
+public record RetInst(String ret) implements Inst {
     @Override
     public String toString() {
         return String.format("ret %s", ret == null ? "" : ret);
@@ -24,6 +19,7 @@ public record RetInst(int num, String ret) implements Inst {
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
+        int num = num();
         if (CodeGenerator.OPTIMIZE) {
             if (ret != null) {
                 String resultReg = RegAllocator.getParamVal(ret, num);
@@ -58,6 +54,21 @@ public record RetInst(int num, String ret) implements Inst {
     @Override
     public String getResult() {
         return null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new RetInst(Inst.transformParam(ret, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 

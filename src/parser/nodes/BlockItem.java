@@ -57,10 +57,8 @@ public class BlockItem implements TreeNode {
         TreeNode firstChild = children.get(0);
         if (firstChild instanceof Stmt) {
             TreeNode stmtFirstChild = ((Stmt) firstChild).getChildren().get(0);
-            if (stmtFirstChild instanceof Symbol && ((Symbol) stmtFirstChild).type() == CategoryCode.RETURNTK
-                &&  ((Stmt) firstChild).getChildren().size() == 3) {
-                return true;
-            }
+            return stmtFirstChild instanceof Symbol && ((Symbol) stmtFirstChild).type() == CategoryCode.RETURNTK
+                    && ((Stmt) firstChild).getChildren().size() == 3;
         }
         return false;
     }

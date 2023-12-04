@@ -2,6 +2,7 @@ package intermediateCode;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface Inst {
     int count = 0;
@@ -12,6 +13,7 @@ public interface Inst {
     Inst generateEquivalentInst(HashMap<String, String> regMap);
     String getResult();
     int num();
+    Inst replace(int n, String funcName);
 
     static String getEquivalentReg(HashMap<String, String> regMap, String param) {
         while (regMap.containsKey(param) && param != null && !param.equals(regMap.get(param))) {
@@ -30,17 +32,11 @@ public interface Inst {
     }
 
     static boolean isStackParam(String param) {
-        int count = 0;
-        for (int i = 0; i < param.length(); i++) {
-            if (param.charAt(i) == '_') {
-                count++;
-            }
-        }
-        return param.charAt(0)=='%' && count > 0;
+        return param.matches("^%\\d+_.*$");
     }
 
     static boolean isGlobalParam(String param) {
-        return param.charAt(0) == '@';
+        return param != null && param.charAt(0) == '@';
     }
 
     static boolean isTempParam(String param) {
@@ -53,6 +49,30 @@ public interface Inst {
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    static String transformParam(String param, int n, String funcName) {
+        if (param == null) {
+            return null;
+        } else if (isStackParam(param)) {
+            return param + '@' + funcName;
+        } else if (isTempParam(param)) {
+            return param + '@' + funcName + '@' + n;
+        } else {
+            return param;
+        }
+    }
+
+    static String transformLabel(String label, int n, String funcName) {
+        return label + '@' + funcName + '@' + n;
+    }
+
+    static String transformArrName(String arrName, int n, String funcName, Map<String, String> arrMap) {
+        if (arrMap.containsKey(arrName)) {
+            return arrMap.get(arrName);
+        } else {
+            return transformParam(arrName, n, funcName);
         }
     }
 }

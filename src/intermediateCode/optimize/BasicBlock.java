@@ -4,7 +4,6 @@ import intermediateCode.Computable;
 import intermediateCode.Inst;
 import intermediateCode.instructions.*;
 
-import java.sql.Struct;
 import java.util.*;
 
 public class BasicBlock {

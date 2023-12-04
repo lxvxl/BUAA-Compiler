@@ -28,6 +28,5 @@ public class Cond implements TreeNode {
         for (TreeNode node: children) {
             node.compile();
         }
-                
     }
 }

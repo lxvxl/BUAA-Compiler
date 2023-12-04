@@ -6,8 +6,10 @@ import java.util.List;
 
 public class Func extends AbstractIdent {
 
-    private String returnType;
-    private List<Var> params;
+    private final String returnType;
+    private final List<Var> params;
+    private boolean inlinable = false;
+
     public Func(String name, String returnType, List<Var> params) {
         super(name);
         this.returnType = returnType;
@@ -29,5 +31,13 @@ public class Func extends AbstractIdent {
             ret += " " + v.toString();
         }
         return ret;
+    }
+
+    public void setInlinable(boolean inlinable) {
+        this.inlinable = inlinable;
+    }
+
+    public boolean isInlinable() {
+        return inlinable;
     }
 }

@@ -11,11 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record SubInst(int num, String result, String para1, String para2) implements Inst, Computable {
-
-    public SubInst(String result, String para1, String para2) {
-        this(CodeGenerator.getInstNum(), result, para1, para2);
-    }
+public record SubInst(String result, String para1, String para2) implements Inst, Computable {
 
     @Override
     public String toString() {
@@ -36,6 +32,7 @@ public record SubInst(int num, String result, String para1, String para2) implem
     }
 
     private void toMips2() {
+        int num = num();
         String freeReg = RegAllocator.getFreeReg(num, result);
         if (Inst.isImmediate(para2)) {
             short a = Short.parseShort(para2);
@@ -77,5 +74,22 @@ public record SubInst(int num, String result, String para1, String para2) implem
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new SubInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(para1, n, funcName),
+                Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }

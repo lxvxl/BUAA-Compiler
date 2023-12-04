@@ -18,13 +18,32 @@ public class CodeGenerator {
     private static final List<Inst> globalInsts = new ArrayList<>();
     private static final Map<String, String> constStrMap = new HashMap<>();
     private static int constStrNum = 0;
-    private static int instNum = 1;
+    private static final HashMap<Inst, Integer> instNumMap = new HashMap<>();
+    private static int instNum = 0;
 
     public final static boolean OPTIMIZE = true;
 
-    public static int getInstNum() {
-        return instNum++;
+    public static void clearInstNum() {
+        instNum = 0;
+        instNumMap.clear();
     }
+
+    public static void recordInstNum(Inst inst) {
+        instNumMap.put(inst, instNum++);
+    }
+
+    public static int getInstNum(Inst inst) {
+        return instNumMap.get(inst);
+    }
+
+    public static FuncCode getFuncCode(String name) {
+        Optional<FuncCode> funcCode = funcs.stream()
+                .filter(f -> f.name().equals(name))
+                .findFirst();
+        assert funcCode.isPresent();
+        return funcCode.get();
+    }
+
 
     public static void optimize() {
         MipsGenerator.addInst(".data");

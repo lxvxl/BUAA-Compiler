@@ -12,12 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record ModInst(int num, String result, String para1, String para2) implements Inst, Computable {
-
-    public ModInst(String result, String para1, String para2) {
-        this(CodeGenerator.getInstNum(), result, para1, para2);
-    }
-
+public record ModInst(String result, String para1, String para2) implements Inst, Computable {
     @Override
     public String toString() {
         return String.format("%s = mod %s %s", result, para1, para2);
@@ -27,6 +22,7 @@ public record ModInst(int num, String result, String para1, String para2) implem
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
         if (CodeGenerator.OPTIMIZE) {
+            int num = num();
             String resultReg = RegAllocator.getFreeReg(num, result);
             String para1Reg = RegAllocator.getParamVal(para1, num);
             String para2Reg = RegAllocator.getParamVal(para2, num);
@@ -68,6 +64,23 @@ public record ModInst(int num, String result, String para1, String para2) implem
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new ModInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(para1, n, funcName),
+                Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 

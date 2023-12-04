@@ -9,13 +9,10 @@ import intermediateCode.optimize.StackAlloactor;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-public record LoadInst(int num, String result, String addr, int offset, String arrName) implements Inst {
-
-    public LoadInst(String result, String addr, int offset, String arrName) {
-        this(CodeGenerator.getInstNum(), result, addr, offset, arrName);
-    }
+public record LoadInst(String result, String addr, int offset, String arrName) implements Inst {
 
     @Override
     public String toString() {
@@ -35,6 +32,7 @@ public record LoadInst(int num, String result, String addr, int offset, String a
     }
 
     private void toMips2() {
+        int num = num();
         //判断这个地址是否和一个全局寄存器绑定起来
         if (RegAllocator.bindTempParamWithGlobalReg(addr, result)) {
             return;
@@ -69,7 +67,8 @@ public record LoadInst(int num, String result, String addr, int offset, String a
 
     @Override
     public Inst generateEquivalentInst(HashMap<String, String> regMap) {
-        return new LoadInst(result, Inst.getEquivalentReg(regMap, addr), offset, arrName);
+        return new LoadInst(result, Inst.getEquivalentReg(regMap, addr), offset, Inst.getEquivalentReg(regMap, arrName)
+                );
     }
 
     @Override
@@ -80,6 +79,31 @@ public record LoadInst(int num, String result, String addr, int offset, String a
 
     public boolean isArray() {
         return arrName != null;
+    }
+
+    @Override
+    public int num() {
+        return CodeGenerator.getInstNum(this);
+    }
+
+    @Override
+    public Inst replace(int n, String funcName) {
+        return new LoadInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(addr, n, funcName),
+                offset,
+                Inst.transformParam(arrName, n, funcName));
+    }
+
+    public Inst replace(int n, String funcName, Map<String, String> arrMap) {
+        return new LoadInst(Inst.transformParam(result, n, funcName),
+                Inst.transformParam(addr, n, funcName),
+                offset,
+                Inst.transformArrName(arrName, n, funcName, arrMap));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
     }
 }
 
