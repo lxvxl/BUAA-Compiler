@@ -59,6 +59,7 @@ public class LVal implements TreeNode {
             return;
         }
         String addr = var.getAddrReg();
+        String areaName = addr;
         if (var.isPtr()) {
             addr = CodeGenerator.generateLoad(addr, "0", null);
         }
@@ -88,7 +89,7 @@ public class LVal implements TreeNode {
                             throw new Exception();
                         }
                     } catch (Exception e) {
-                        String result = CodeGenerator.generateLoad(addr, loc, addr);
+                        String result = CodeGenerator.generateLoad(addr, loc, areaName);
                         SyntaxChecker.setExpReturnReg(result);
                     }
                 } else {
@@ -111,7 +112,7 @@ public class LVal implements TreeNode {
                 } catch (Exception e) {
                     String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
                     String middleAddr = CodeGenerator.generateAdd(addr, off1);
-                    String result = CodeGenerator.generateLoad(middleAddr, loc2, addr);
+                    String result = CodeGenerator.generateLoad(middleAddr, loc2, areaName);
                     SyntaxChecker.setExpReturnReg(result);
                 }
             }
@@ -123,6 +124,7 @@ public class LVal implements TreeNode {
         Symbol ident = (Symbol)children.get(0);
         Var var = (Var) SymbolTable.searchIdent(ident.symbol());
         String addr = var.getAddrReg();
+        String areaName = addr;
         boolean isGlobalArea = var.isPtr() || addr.charAt(0) == '@';
         switch (children.size()) {
             case 1 -> {
@@ -134,7 +136,7 @@ public class LVal implements TreeNode {
                 }
                 children.get(2).compile();
                 String loc = SyntaxChecker.getExpReturnReg();
-                CodeGenerator.generateStore(val, addr, loc, addr, isGlobalArea);
+                CodeGenerator.generateStore(val, addr, loc, areaName, isGlobalArea);
             }
             case 7 -> {
                 if (var.isPtr()) {
@@ -147,7 +149,7 @@ public class LVal implements TreeNode {
 
                 String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
                 String middleAddr = CodeGenerator.generateAdd(addr, off1);
-                CodeGenerator.generateStore(val, middleAddr, loc2, addr, isGlobalArea);
+                CodeGenerator.generateStore(val, middleAddr, loc2, areaName, isGlobalArea);
             }
         }
     }

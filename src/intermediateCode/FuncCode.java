@@ -17,6 +17,9 @@ public class FuncCode {
     private final String name;
     private List<Inst> insts;
     private final Func func;
+    private boolean inferable;//表示是否可以从参数推断出函数的返回值
+
+    private boolean hasSideEffect;
 
     private static final boolean peepholeOp = true;
 
@@ -33,17 +36,16 @@ public class FuncCode {
         //函数内联
         checkInlinable();
         inlineFuncs();
-        output();
+        //检查副作用
+        this.checkSideEffect();
         //基本块划分
         HashMap<String, BasicBlock> labelToBlock = new HashMap<>();
         List<BasicBlock> basicBlocks = new ArrayList<>();
         generateBasicBlocks(basicBlocks, labelToBlock);
-        //insts.clear();
         //dag优化
         for (BasicBlock block : basicBlocks) {
             block.dagOptimize();
         }
-
 
         //活跃变量分析
         boolean isFinished = false;
@@ -78,7 +80,8 @@ public class FuncCode {
         /*if (true) {
             throw new RuntimeException();
         }*/
-
+        checkInferable();
+        output();
         toMips2(basicBlocks);
     }
 
@@ -285,19 +288,15 @@ public class FuncCode {
 
             //将被内联函数的中间代码插入到现在的函数中
             List<Inst> anotherFuncInsts = CodeGenerator.getFuncCode(funcName).insts();
-
+            //先维护内存区域的标记
+            //TODO 我忘了这里是干啥用的了，好像能删
             for (Inst tf : anotherFuncInsts) {
                 if (tf instanceof LoadInst loadInst) {
                     String loadInstAddr = Inst.transformParam(loadInst.addr(), n, funcName);
                     if (areaMap.containsKey(loadInstAddr)) {
                         areaMap.put(loadInst.result(), areaMap.get(loadInstAddr));
                     }
-                }/* else if (tf instanceof StoreInst storeInst) {
-                    String storeInstAddr = Inst.transformParam(storeInst.addr(), n, funcName);
-                    if (areaMap.containsKey(storeInstAddr)) {
-                        areaMap.put(storeInst.getResult(), areaMap.get(storeInstAddr));
-                    }
-                }*/
+                }
             }
 
             for (Inst inst1 : anotherFuncInsts) {
@@ -317,11 +316,66 @@ public class FuncCode {
         this.insts = newInsts;
     }
 
+    private void checkInferable() {
+        if (func.getReturnType().equals("void")
+                || this.func.getParams().stream().anyMatch(v -> v.getDim() > 0)
+                || this.insts.size() > 300) {
+            this.inferable = false;
+            return;
+        }
+        for (Inst inst : insts) {
+            if (inst instanceof GetIntInst
+                || inst instanceof PutIntInst
+                || inst instanceof PutStrInst
+            ) {
+                this.inferable = false;
+                return;
+            }
+            if (inst instanceof CallInst callInst) {
+                if (!CodeGenerator.getFuncCode(callInst.funcName()).isInferable()
+                    && !callInst.funcName().equals(name)) {
+                    this.inferable = false;
+                    return;
+                }
+            }
+            if (inst.getParams()
+                    .stream()
+                    .anyMatch(Inst::isGlobalParam)) {
+                this.inferable = false;
+                return;
+            }
+        }
+        this.inferable = true;
+    }
+
+    private void checkSideEffect() {
+        this.hasSideEffect = true;
+        this.hasSideEffect = this.insts.stream()
+                .anyMatch(i -> i instanceof GetIntInst
+                || i instanceof PutIntInst
+                || i instanceof PutStrInst
+                || i instanceof CallInst callInst && CodeGenerator.getFuncCode(callInst.funcName()).hasSideEffect
+                || i instanceof StoreInst storeInst && storeInst.isGlobalArea());
+    }
+
+    private boolean hasSideEffect() {
+        return this.hasSideEffect;
+    }
+
+
+    public boolean isInferable() {
+        return inferable;
+    }
+
     public String name() {
         return name;
     }
 
     public List<Inst> insts() {
         return insts;
+    }
+
+    public Func getFunc() {
+        return func;
     }
 }

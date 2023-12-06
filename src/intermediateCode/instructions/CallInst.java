@@ -9,12 +9,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import Writer.MipsGenerator;
-import intermediateCode.CodeGenerator;
-import intermediateCode.FrameMonitor;
-import intermediateCode.Inst;
+import intermediateCode.*;
 import intermediateCode.optimize.StackAlloactor;
 
 public record CallInst(String result, String funcName, List<String> params) implements Inst {
+    private static int count = 0;
     @Override
     public String toString() {
         if (result == null) {
@@ -85,6 +84,20 @@ public record CallInst(String result, String funcName, List<String> params) impl
     @Override
     public boolean equals(Object o) {
         return this == o;
+    }
+
+    public String getSpecificResult() {
+        FuncCode funcCode = CodeGenerator.getFuncCode(funcName);
+        if (!funcCode.isInferable()) {
+            return null;
+        }
+        if (params.stream().allMatch(Inst::isInt)) {
+            System.out.println("开始推断函数的值");
+            count++;
+            return Integer.toString(VirtualMachine.runFunc(funcName, params.stream().map(Integer::parseInt).toList()));
+        } else {
+            return null;
+        }
     }
 }
 

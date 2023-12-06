@@ -96,6 +96,15 @@ public class BasicBlock {
                     addrRecords.removeIf(e -> e.addr().equals(storeInst.addr()));
                 }
                 addrRecords.add(new ParamAddr(storeInst.addr(), storeInst.offset(), storeInst.val(), storeInst.isArray()));
+            } else if (newInst instanceof CallInst callInst) {
+                String specificResult = callInst.getSpecificResult();
+                if (specificResult != null) {
+                    regMap.put(callInst.result(), specificResult);
+                } else {
+                    newInsts.add(newInst);
+                    regMap.put(newInst.getResult(), newInst.getResult());
+                    regMap.remove(null);
+                }
             } else {
                 newInsts.add(newInst);
                 regMap.put(newInst.getResult(), newInst.getResult());
