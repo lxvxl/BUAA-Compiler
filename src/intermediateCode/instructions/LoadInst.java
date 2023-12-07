@@ -16,7 +16,7 @@ public record LoadInst(String result, String addr, int offset, String arrName) i
 
     @Override
     public String toString() {
-        return String.format("%s = load %s %s", result, addr, offset);
+        return String.format("%s = load %s %s      //arrName=%s", result, addr, offset, arrName);
     }
 
     @Override

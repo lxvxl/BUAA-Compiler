@@ -13,6 +13,9 @@ public class MemoryRecord {
      * 记录一次存储操作
      */
     public void recordStore(StoreInst storeInst) {
+        if (storeInst.isArray() || storeInst.isGlobalArea()) {
+            return;
+        }
         AddrRecord addrRecord = new AddrRecord(storeInst.addr(),
                 storeInst.offset(),
                 storeInst.isArray() ? storeInst.arrName() : storeInst.addr(),
@@ -25,6 +28,7 @@ public class MemoryRecord {
      * 查看这次的读操作是否是已经读过的，如果是，返回对应的值。否则，返回null;
      */
     public String getLoadValue(LoadInst loadInst) {
+        if (loadInst.isArray() || Inst.isGlobalParam())
         AddrRecord addrRecord = addrRecords.stream()
                 .filter(r -> r.isSameLoc(loadInst.addr(), loadInst.offset()))
                 .findFirst()

@@ -77,10 +77,6 @@ public class BasicBlock {
                     regMap.put(newInst.getResult(), inst1.getResult());
                 }
             } else if (newInst instanceof LoadInst loadInst) {
-                if (loadInst.addr().charAt(0) == '@') {
-                    newInsts.add(newInst);
-                    continue;
-                }
                 String val = memoryRecord.getLoadValue(loadInst);
                 String result = loadInst.result();
                 regMap.put(result, val);
@@ -103,10 +99,6 @@ public class BasicBlock {
                     regMap.put(newInst.getResult(), paramAddr.storeReg);
                 }*/
             } else if (newInst instanceof StoreInst storeInst) {
-                if (storeInst.addr().charAt(0) == '@') {
-                    newInsts.add(newInst);
-                    continue;
-                }
                 memoryRecord.recordStore(storeInst);
                 newInsts.add(newInst);
                 /*if (storeInst.addr().charAt(0) == '@') {

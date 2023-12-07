@@ -16,7 +16,8 @@ import java.util.stream.Stream;
 public record StoreInst(String val, String addr, int offset, String arrName, boolean isGlobalArea) implements Inst {
     @Override
     public String toString() {
-        return String.format("store %s, %s, %s    //arrName=%s", val, addr, offset, arrName);
+        return String.format("store %s, %s, %s    //arrName=%s, isGlobalArea=%b",
+                val, addr, offset, arrName, isGlobalArea);
     }
 
     @Override
