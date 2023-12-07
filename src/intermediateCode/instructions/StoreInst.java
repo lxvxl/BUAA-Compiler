@@ -97,11 +97,12 @@ public record StoreInst(String val, String addr, int offset, String arrName, boo
 
     public Inst replace(int n, String funcName, Map<String, String> arrMap) {
         String newArrName = Inst.transformArrName(arrName, n, funcName, arrMap);
+        String newAddr = Inst.transformParam(addr, n, funcName);
         return new StoreInst(Inst.transformParam(val, n, funcName),
-                Inst.transformParam(addr, n, funcName),
+                newAddr,
                 offset,
                 newArrName,
-                Inst.isGlobalParam(newArrName));
+                Inst.isGlobalParam(newArrName) || Inst.isGlobalParam(newAddr));
     }
 
     @Override

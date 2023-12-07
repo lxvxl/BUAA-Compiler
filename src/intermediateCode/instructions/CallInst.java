@@ -52,7 +52,7 @@ public record CallInst(String result, String funcName, List<String> params) impl
 
     @Override
     public List<String> getParams() {
-        return params.stream().filter(p -> !Inst.isInt(p)).toList();
+        return params;
     }
 
     @Override

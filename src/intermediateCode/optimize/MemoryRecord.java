@@ -1,12 +1,10 @@
 package intermediateCode.optimize;
 
+import intermediateCode.Inst;
 import intermediateCode.instructions.LoadInst;
 import intermediateCode.instructions.StoreInst;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class MemoryRecord {
     private List<AddrRecord> addrRecords = new ArrayList<>();
@@ -15,9 +13,6 @@ public class MemoryRecord {
      * 记录一次存储操作
      */
     public void recordStore(StoreInst storeInst) {
-        if (addrRecords.stream().anyMatch(r -> r.isSameLoc(storeInst.addr(), storeInst.offset()))) {
-            return;
-        }
         AddrRecord addrRecord = new AddrRecord(storeInst.addr(),
                 storeInst.offset(),
                 storeInst.isArray() ? storeInst.arrName() : storeInst.addr(),
@@ -40,14 +35,17 @@ public class MemoryRecord {
                     loadInst.isArray() ? loadInst.arrName() : loadInst.addr(),
                     loadInst.result());
             addrRecords.add(addrRecord);
-            return null;
+            return loadInst.result();
         } else {
             return addrRecord.value();
         }
     }
 
-    public void dealCallInst(MemoryRecord memoryRecord) {
-        memoryRecord.addrRecords.forEach(r -> this.addrRecords.removeIf(r::isConflict));
+    /**
+     * 处理函数的修改的内存区域
+     */
+    public void removeGlobalAndDirtyArea(Set<String> areaSet) {
+        addrRecords.removeIf(r -> areaSet.contains(r.areaName) || Inst.isGlobalParam(r.areaName));
     }
 
     public boolean hasSideEffect(String areaName) {

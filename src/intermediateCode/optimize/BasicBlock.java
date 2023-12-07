@@ -1,6 +1,10 @@
 package intermediateCode.optimize;
 
+import ident.idents.Func;
+import ident.idents.Var;
+import intermediateCode.CodeGenerator;
 import intermediateCode.Computable;
+import intermediateCode.FuncCode;
 import intermediateCode.Inst;
 import intermediateCode.instructions.*;
 
@@ -50,8 +54,12 @@ public class BasicBlock {
     }
 
     public void dagOptimize() {
+        MemoryRecord memoryRecord = new MemoryRecord();
         List<Inst> newInsts = new ArrayList<>();
-        for (Inst inst : this.insts) {
+        regMap.clear();
+        NextInst:
+        for (int i = 0; i < insts.size(); i++) {
+            Inst inst = insts.get(i);
             Inst newInst = inst.generateEquivalentInst(regMap);
             if (newInst instanceof Computable computableInst) {
                 if (computableInst.getSpecificResult() != null) {
@@ -73,6 +81,16 @@ public class BasicBlock {
                     newInsts.add(newInst);
                     continue;
                 }
+                String val = memoryRecord.getLoadValue(loadInst);
+                String result = loadInst.result();
+                regMap.put(result, val);
+                if (result.equals(val)) {
+                    newInsts.add(newInst);
+                }
+                /*if (loadInst.addr().charAt(0) == '@') {
+                    newInsts.add(newInst);
+                    continue;
+                }
                 ParamAddr paramAddr = addrRecords.stream()
                         .filter(p -> p.addr().equals(loadInst.addr()) && p.offset == loadInst.offset())
                         .findFirst()
@@ -83,9 +101,15 @@ public class BasicBlock {
                     addrRecords.add(new ParamAddr(loadInst.addr(), loadInst.offset(), loadInst.result(), loadInst.isArray()));
                 } else {
                     regMap.put(newInst.getResult(), paramAddr.storeReg);
-                }
+                }*/
             } else if (newInst instanceof StoreInst storeInst) {
                 if (storeInst.addr().charAt(0) == '@') {
+                    newInsts.add(newInst);
+                    continue;
+                }
+                memoryRecord.recordStore(storeInst);
+                newInsts.add(newInst);
+                /*if (storeInst.addr().charAt(0) == '@') {
                     newInsts.add(newInst);
                     continue;
                 }
@@ -95,12 +119,49 @@ public class BasicBlock {
                 } else {
                     addrRecords.removeIf(e -> e.addr().equals(storeInst.addr()));
                 }
-                addrRecords.add(new ParamAddr(storeInst.addr(), storeInst.offset(), storeInst.val(), storeInst.isArray()));
+                addrRecords.add(new ParamAddr(storeInst.addr(), storeInst.offset(), storeInst.val(), storeInst.isArray()));*/
             } else if (newInst instanceof CallInst callInst) {
                 String specificResult = callInst.getSpecificResult();
                 if (specificResult != null) {
                     regMap.put(callInst.result(), specificResult);
+                    continue;
+                }
+                //标记被修改的内存环境
+                FuncCode funcCode = CodeGenerator.getFuncCode(callInst.funcName());
+                Func func = funcCode.getFunc();
+                Set<String> areaSet = new HashSet<>();
+                List<Var> vars = func.getParams();
+                List<String> params = callInst.params();
+                for (int j = 0; j < vars.size(); j++) {
+                    Var var = vars.get(j);
+                    if (var.getDim() > 0) {
+                        String param = params.get(j);
+                        areaSet.add(FuncCode.findArea(param, newInsts, newInsts.size()));
+                    }
+                }
+                if (funcCode.hasSideEffect()) {
+                    //如果有副作用，将areaSet内部的内存空间和全局内存空间全部标记为dirty
+                    newInsts.add(newInst);
+                    regMap.put(newInst.getResult(), newInst.getResult());
+                    regMap.remove(null);
+                    memoryRecord.removeGlobalAndDirtyArea(areaSet);
                 } else {
+                    //如果没有副作用，那么在areaSet被修改之前看看是否有相同类型的函数
+                    if (callInst.result() == null) {
+                        continue;
+                    }
+                    for (int j = newInsts.size() - 1; j >= 0 ; j--) {
+                        if (newInsts.get(j) instanceof StoreInst storeInst
+                            && (areaSet.contains(storeInst.arrName()) || Inst.isGlobalParam(storeInst.arrName()))) {
+                            break;
+                        }
+                        if (newInsts.get(j) instanceof CallInst anotherCall
+                            && anotherCall.funcName().equals(callInst.funcName())
+                            && anotherCall.getParams().equals(callInst.getParams())) {
+                            regMap.put(callInst.getResult(), anotherCall.getResult());
+                            continue NextInst;
+                        }
+                    }
                     newInsts.add(newInst);
                     regMap.put(newInst.getResult(), newInst.getResult());
                     regMap.remove(null);

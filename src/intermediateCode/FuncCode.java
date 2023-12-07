@@ -46,7 +46,6 @@ public class FuncCode {
         for (BasicBlock block : basicBlocks) {
             block.dagOptimize();
         }
-
         //活跃变量分析
         boolean isFinished = false;
         while (!isFinished) {
@@ -77,9 +76,6 @@ public class FuncCode {
         insts.clear();
         basicBlocks.forEach(b -> insts.addAll(b.getInsts()));
         RegAllocator.allocateGlobalReg();
-        /*if (true) {
-            throw new RuntimeException();
-        }*/
         checkInferable();
         output();
         toMips2(basicBlocks);
@@ -267,7 +263,7 @@ public class FuncCode {
                 ));
                 if (var.getDim() != 0) {
                     if (!Inst.isTempParam(param)) {
-                        areaMap.put(newVarAddr, param);
+                        areaMap.put(var.getAddrReg(), param);
                     } else {
                         String arrReg = null;
                         for (int k = j - 1; k > 0 ; k--) {
@@ -308,6 +304,7 @@ public class FuncCode {
                     newInsts.add(loadInst.replace(n, funcName, areaMap));
                 } else if (inst1 instanceof StoreInst storeInst) {
                     newInsts.add(storeInst.replace(n, funcName, areaMap));
+                } else if (inst1 instanceof AllocaInst && n > 1) {
                 } else {
                     newInsts.add(inst1.replace(n, funcName));
                 }
@@ -358,7 +355,7 @@ public class FuncCode {
                 || i instanceof StoreInst storeInst && storeInst.isGlobalArea());
     }
 
-    private boolean hasSideEffect() {
+    public boolean hasSideEffect() {
         return this.hasSideEffect;
     }
 
@@ -377,5 +374,23 @@ public class FuncCode {
 
     public Func getFunc() {
         return func;
+    }
+
+    /**
+     * 查找一个变量到底是指向哪个内存区域的，从baseLoc向前回溯
+     */
+    public static String findArea(String param, List<Inst> insts, int baseLoc) {
+        if (Inst.isTempParam(param)) {
+            for (int k = baseLoc - 1;; k--) {
+                if (insts.get(k) instanceof AddInst addInst && addInst.result().equals(param)) {
+                    return  !Inst.isGlobalParam(addInst.para1()) && !Inst.isInt(addInst.para1()) ?
+                            addInst.para2() : addInst.para1();
+                } else if (insts.get(k) instanceof LoadInst loadInst && loadInst.result().equals(param)) {
+                    return loadInst.addr();
+                }
+            }
+        } else {
+            return param;
+        }
     }
 }
