@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public record LoadInst(String result, String addr, int offset, String arrName) implements Inst {
+public record LoadInst(String result, String addr, int offset, String arrName, boolean isGlobalArea) implements Inst {
 
     @Override
     public String toString() {
@@ -67,8 +67,11 @@ public record LoadInst(String result, String addr, int offset, String arrName) i
 
     @Override
     public Inst generateEquivalentInst(HashMap<String, String> regMap) {
-        return new LoadInst(result, Inst.getEquivalentReg(regMap, addr), offset, Inst.getEquivalentReg(regMap, arrName)
-                );
+        return new LoadInst(result,
+                Inst.getEquivalentReg(regMap, addr),
+                offset,
+                Inst.getEquivalentReg(regMap, arrName),
+                isGlobalArea);
     }
 
     @Override
@@ -88,17 +91,17 @@ public record LoadInst(String result, String addr, int offset, String arrName) i
 
     @Override
     public Inst replace(int n, String funcName) {
-        return new LoadInst(Inst.transformParam(result, n, funcName),
-                Inst.transformParam(addr, n, funcName),
-                offset,
-                Inst.transformParam(arrName, n, funcName));
+        throw new RuntimeException();
     }
 
     public Inst replace(int n, String funcName, Map<String, String> arrMap) {
+        String newAddr = Inst.transformParam(addr, n, funcName);
+        String newArrName = Inst.transformArrName(arrName, n, funcName, arrMap);
         return new LoadInst(Inst.transformParam(result, n, funcName),
-                Inst.transformParam(addr, n, funcName),
+                newAddr,
                 offset,
-                Inst.transformArrName(arrName, n, funcName, arrMap));
+                newArrName,
+                Inst.isGlobalParam(newArrName) || Inst.isGlobalParam(newAddr));
     }
 
     @Override

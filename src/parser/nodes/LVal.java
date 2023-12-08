@@ -60,8 +60,9 @@ public class LVal implements TreeNode {
         }
         String addr = var.getAddrReg();
         String areaName = addr;
+        boolean isGlobalArea = var.isPtr() || addr.charAt(0) == '@';
         if (var.isPtr()) {
-            addr = CodeGenerator.generateLoad(addr, "0", null);
+            addr = CodeGenerator.generateLoad(addr, "0", null, false);
         }
         switch (children.size()) {
             case 1 -> {
@@ -72,7 +73,7 @@ public class LVal implements TreeNode {
                     if (var.isConst()) {
                         SyntaxChecker.setExpReturnReg(var.getInitVal());
                     } else {
-                        String result = CodeGenerator.generateLoad(addr, "0", null);
+                        String result = CodeGenerator.generateLoad(addr, "0", null, isGlobalArea);
                         SyntaxChecker.setExpReturnReg(result);
                     }
                 }
@@ -89,7 +90,7 @@ public class LVal implements TreeNode {
                             throw new Exception();
                         }
                     } catch (Exception e) {
-                        String result = CodeGenerator.generateLoad(addr, loc, areaName);
+                        String result = CodeGenerator.generateLoad(addr, loc, areaName, isGlobalArea);
                         SyntaxChecker.setExpReturnReg(result);
                     }
                 } else {
@@ -112,7 +113,7 @@ public class LVal implements TreeNode {
                 } catch (Exception e) {
                     String off1 = CodeGenerator.generateMul(loc1, var.getElementSize());
                     String middleAddr = CodeGenerator.generateAdd(addr, off1);
-                    String result = CodeGenerator.generateLoad(middleAddr, loc2, areaName);
+                    String result = CodeGenerator.generateLoad(middleAddr, loc2, areaName, isGlobalArea);
                     SyntaxChecker.setExpReturnReg(result);
                 }
             }
@@ -132,7 +133,7 @@ public class LVal implements TreeNode {
             }
             case 4 -> {
                 if (var.isPtr()) {
-                    addr = CodeGenerator.generateLoad(addr, "0", null);
+                    addr = CodeGenerator.generateLoad(addr, "0", null, false);
                 }
                 children.get(2).compile();
                 String loc = SyntaxChecker.getExpReturnReg();
@@ -140,7 +141,7 @@ public class LVal implements TreeNode {
             }
             case 7 -> {
                 if (var.isPtr()) {
-                    addr = CodeGenerator.generateLoad(addr, "0", null);
+                    addr = CodeGenerator.generateLoad(addr, "0", null, false);
                 }
                 children.get(2).compile();
                 String loc1 = SyntaxChecker.getExpReturnReg();

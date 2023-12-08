@@ -163,7 +163,12 @@ public class FuncCode {
     public void generateBasicBlocks(List<BasicBlock> basicBlocks, HashMap<String, BasicBlock> labelToBlock) {
         Map<String, String> regMap = new HashMap<>();
         func.getParams().forEach(var -> regMap.put(var.getAddrReg(), var.getAddrReg()));
-        BasicBlock curBlock = new BasicBlock(name, regMap);
+        List<String> funcArrParams = func.getParams().stream()
+                .filter(v -> v.getDim() > 0)
+                .map(Var::getAddrReg)
+                .toList();
+
+        BasicBlock curBlock = new BasicBlock(name, regMap, funcArrParams);
         labelToBlock.put(name, curBlock);
         for (Inst inst : insts) {
             if (inst instanceof Label label) {
@@ -171,7 +176,7 @@ public class FuncCode {
                     curBlock.setNextBlock(label.label());
                     basicBlocks.add(curBlock);
                 }
-                curBlock = new BasicBlock(label.label(), regMap);
+                curBlock = new BasicBlock(label.label(), regMap, funcArrParams);
                 labelToBlock.put(label.label(), curBlock);
                 curBlock.addInst(inst);
             } else if (inst instanceof JumpInst jumpInst) {

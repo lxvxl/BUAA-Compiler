@@ -199,14 +199,14 @@ public class CodeGenerator {
         }
     }
 
-    public static String generateLoad(String addr, String loc, String arrName) {
+    public static String generateLoad(String addr, String loc, String arrName, boolean isGlobalArea) {
         String result = generateReg();
         try {
-            addInst(new LoadInst(result, addr, parseInt(loc) * 4, arrName));
+            addInst(new LoadInst(result, addr, parseInt(loc) * 4, arrName, isGlobalArea));
         } catch (Exception e) {
             String off = generateMul(loc, "4");
             String finalAddr = generateAdd(addr, off);
-            addInst(new LoadInst(result, finalAddr, 0, arrName));
+            addInst(new LoadInst(result, finalAddr, 0, arrName, isGlobalArea));
         }
         return result;
     }

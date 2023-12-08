@@ -15,17 +15,16 @@ public class BasicBlock {
     private final List<String> nextBlock;
     private List<Inst> insts;
     private final HashMap<String, String> regMap;
-    private final Set<ParamAddr> addrRecords = new HashSet<>();
     private HashSet<String> inUsefulVar = new HashSet<>();
     private final HashSet<String> outUsefulVar = new HashSet<>();
+    private final List<String> funcArrParams;
 
-    private record ParamAddr(String addr, int offset, String storeReg, boolean isArray) {}
-
-    public BasicBlock(String label, Map<String, String> regMap) {
+    public BasicBlock(String label, Map<String, String> regMap, List<String> funcArrParams) {
         this.label = label;
         this.nextBlock = new ArrayList<>();
         this.insts = new ArrayList<>();
-        this.regMap = (HashMap<String, String>) regMap;
+        this.regMap = new HashMap<>(regMap);
+        this.funcArrParams = funcArrParams;
     }
 
     public void setNextBlock(String label1, String label2) {
@@ -56,7 +55,6 @@ public class BasicBlock {
     public void dagOptimize() {
         MemoryRecord memoryRecord = new MemoryRecord();
         List<Inst> newInsts = new ArrayList<>();
-        regMap.clear();
         NextInst:
         for (int i = 0; i < insts.size(); i++) {
             Inst inst = insts.get(i);
@@ -99,6 +97,17 @@ public class BasicBlock {
                     regMap.put(newInst.getResult(), paramAddr.storeReg);
                 }*/
             } else if (newInst instanceof StoreInst storeInst) {
+                //如果是全局类型的数组
+                if (storeInst.isGlobalArea() && storeInst.isArray()) {
+                    if (funcArrParams.contains(storeInst.arrName())) {
+                        //如果这个数组是通过函数的参数传进来的话，将所有全局数组和参数数组全部移除
+                        funcArrParams.forEach(memoryRecord::deleteAreaName);
+                        memoryRecord.deleteGlobalArr();
+                    } else {
+                        //这个数组是全局数组，将全部的参数数组全部移除
+                        funcArrParams.forEach(memoryRecord::deleteAreaName);
+                    }
+                }
                 memoryRecord.recordStore(storeInst);
                 newInsts.add(newInst);
                 /*if (storeInst.addr().charAt(0) == '@') {
@@ -118,45 +127,28 @@ public class BasicBlock {
                     regMap.put(callInst.result(), specificResult);
                     continue;
                 }
-                //标记被修改的内存环境
                 FuncCode funcCode = CodeGenerator.getFuncCode(callInst.funcName());
-                Func func = funcCode.getFunc();
-                Set<String> areaSet = new HashSet<>();
-                List<Var> vars = func.getParams();
-                List<String> params = callInst.params();
-                for (int j = 0; j < vars.size(); j++) {
-                    Var var = vars.get(j);
-                    if (var.getDim() > 0) {
-                        String param = params.get(j);
-                        areaSet.add(FuncCode.findArea(param, newInsts, newInsts.size()));
+                if (!funcCode.hasSideEffect()) {
+                    if (callInst.result() != null) {
+                        newInsts.add(callInst);
+                        regMap.put(callInst.result(), callInst.result());
                     }
-                }
-                if (funcCode.hasSideEffect()) {
-                    //如果有副作用，将areaSet内部的内存空间和全局内存空间全部标记为dirty
-                    newInsts.add(newInst);
-                    regMap.put(newInst.getResult(), newInst.getResult());
-                    regMap.remove(null);
-                    memoryRecord.removeGlobalAndDirtyArea(areaSet);
                 } else {
-                    //如果没有副作用，那么在areaSet被修改之前看看是否有相同类型的函数
-                    if (callInst.result() == null) {
-                        continue;
-                    }
-                    for (int j = newInsts.size() - 1; j >= 0 ; j--) {
-                        if (newInsts.get(j) instanceof StoreInst storeInst
-                            && (areaSet.contains(storeInst.arrName()) || Inst.isGlobalParam(storeInst.arrName()))) {
-                            break;
-                        }
-                        if (newInsts.get(j) instanceof CallInst anotherCall
-                            && anotherCall.funcName().equals(callInst.funcName())
-                            && anotherCall.getParams().equals(callInst.getParams())) {
-                            regMap.put(callInst.getResult(), anotherCall.getResult());
-                            continue NextInst;
-                        }
-                    }
                     newInsts.add(newInst);
                     regMap.put(newInst.getResult(), newInst.getResult());
                     regMap.remove(null);
+                    Set<String> areaSet = new HashSet<>();//记录函数需要使用哪些内存区域
+                    List<Var> vars = funcCode.getFunc().getParams();
+                    List<String> params = callInst.params();
+                    for (int j = 0; j < vars.size(); j++) {
+                        Var var = vars.get(j);
+                        if (var.getDim() > 0) {
+                            String param = params.get(j);
+                            areaSet.add(FuncCode.findArea(param, newInsts, newInsts.size()));
+                        }
+                    }
+                    memoryRecord.removeGlobalAndDirtyArea(areaSet);
+                    funcArrParams.forEach(memoryRecord::deleteAreaName);
                 }
             } else {
                 newInsts.add(newInst);
