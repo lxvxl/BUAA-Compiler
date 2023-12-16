@@ -25,7 +25,7 @@ public record CallInst(String result, String funcName, List<String> params) impl
 
     @Override
     public void toMips() {
-        MipsGenerator.addInst("#" + num() + " " + toString());
+        MipsGenerator.addInst("#" + toString());
         if (CodeGenerator.OPTIMIZE) {
             StackAlloactor.dealCallInst(this);
             return;
@@ -79,6 +79,13 @@ public record CallInst(String result, String funcName, List<String> params) impl
         return new CallInst(Inst.transformParam(result, n, funcName),
                 this.funcName,
                 params.stream().map(p -> Inst.transformParam(p, n, funcName)).toList());
+    }
+
+    @Override
+    public Inst replaceFor(int n) {
+        return new CallInst(Inst.transformFor(result, n),
+                this.funcName,
+                params.stream().map(p -> Inst.transformFor(p, n)).toList());
     }
 
     @Override

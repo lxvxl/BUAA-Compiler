@@ -8,8 +8,6 @@ import intermediateCode.instructions.*;
 import intermediateCode.optimize.BasicBlock;
 import intermediateCode.optimize.RegAllocator;
 import intermediateCode.optimize.StackAlloactor;
-import parser.nodes.AddExp;
-import parser.nodes.Block;
 
 import java.util.*;
 
@@ -32,7 +30,6 @@ public class FuncCode {
         //初始化
         RegAllocator.resetAll();
         StackAlloactor.reset();
-
         //函数内联
         checkInlinable();
         inlineFuncs();
@@ -42,6 +39,7 @@ public class FuncCode {
         HashMap<String, BasicBlock> labelToBlock = new HashMap<>();
         List<BasicBlock> basicBlocks = new ArrayList<>();
         generateBasicBlocks(basicBlocks, labelToBlock);
+        //expandLoop(basicBlocks, labelToBlock);
         //dag优化
         for (BasicBlock block : basicBlocks) {
             block.dagOptimize();
@@ -316,6 +314,83 @@ public class FuncCode {
             }
         }
         this.insts = newInsts;
+    }
+
+    private class MyException extends RuntimeException {}
+
+    public void expandLoop(List<BasicBlock> basicBlocks, HashMap<String, BasicBlock> labelToBlock) {
+        int expandTimes = 0;
+        for (int i = 3; i < basicBlocks.size() - 1; i++) {
+            BasicBlock endBlock = basicBlocks.get(i);
+            BasicBlock bodyBlock = basicBlocks.get(i - 1);
+            BasicBlock cmpBlock = basicBlocks.get(i - 2);
+            BasicBlock preBlock = basicBlocks.get(i - 3);
+            try {
+                if (!endBlock.getNextBlock().get(0).equals(cmpBlock.getLabel())) {
+                    throw new Exception();
+                }
+
+                //判断cmpBlock是否合法
+                List<Inst> cmpInsts = cmpBlock.getInsts();
+                LoadInst cmpLoad1 = (LoadInst) cmpInsts.get(1);
+                LoadInst cmpLoad2 = (LoadInst) cmpInsts.get(2);
+                CmpInst cmpCmp = (CmpInst) cmpInsts.get(3);
+                if (cmpInsts.size() != 5 || cmpLoad1.isArray() || cmpLoad1.isGlobalArea()
+                        || cmpLoad2.isArray() || cmpLoad2.isGlobalArea()) {
+                    throw new Exception();
+                }
+                List<Inst> preInsts = preBlock.getInsts();
+                int maxI = Integer.parseInt(cmpCmp.para2());
+                String paramI = cmpLoad1.addr();
+                //确保bodyBlock不会修改i的值
+                if (bodyBlock.getInsts().stream().anyMatch(inst -> inst instanceof StoreInst storeInst
+                        && storeInst.addr().equals(paramI))) {
+                    throw new Exception();
+                }
+                //确保endBlock满足要求
+                LoadInst endLoad = (LoadInst) endBlock.getInsts().get(1);
+                AddInst endAdd = (AddInst) endBlock.getInsts().get(2);
+                StoreInst endStore = (StoreInst) endBlock.getInsts().get(3);
+                if (endBlock.getInsts().size() != 5
+                    || !endLoad.addr().equals(paramI)
+                    || !endAdd.para2().equals("1")
+                    || !endStore.addr().equals(paramI)) {
+                    throw new Exception();
+                }
+                //查找i的初始值
+                int initI = 0;
+                for (int j = preInsts.size() - 1; j >= 0 ; j--) {
+                    if (preInsts.get(j) instanceof StoreInst storeInst
+                        && storeInst.addr().equals(paramI)) {
+                        initI = Integer.parseInt(storeInst.val());
+                    }
+                    if (j == 0) {
+                        throw new Exception();
+                    }
+                }
+                int loopTimes = maxI - initI;
+                List<Inst> bodyInsts = new ArrayList<>(bodyBlock.getInsts().subList(1, bodyBlock.getInsts().size() - 1));
+                bodyInsts.add(endLoad);
+                bodyInsts.add(endAdd);
+                bodyInsts.add(endStore);
+                preInsts.remove(preInsts.size() - 1);
+                for (int j = 0; j < loopTimes; j++) {
+                    int finalExpandTimes = expandTimes;
+                    preInsts.addAll(bodyInsts.stream().map(inst -> inst.replaceFor(finalExpandTimes)).toList());
+                    expandTimes++;
+                }
+                preInsts.addAll(basicBlocks.get(i + 1).getInsts().subList(1, basicBlocks.get(i + 1).getInsts().size()));
+                basicBlocks.remove(i - 2);
+                basicBlocks.remove(i - 2);
+                basicBlocks.remove(i - 2);
+                basicBlocks.remove(i - 2);
+                i = Math.max(i - 4, 3);
+            } catch (MyException e) {
+                throw e;
+            } catch (Exception e) {
+                continue;
+            }
+        }
     }
 
     private void checkInferable() {

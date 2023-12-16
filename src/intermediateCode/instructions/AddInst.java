@@ -7,7 +7,6 @@ import intermediateCode.FrameMonitor;
 import intermediateCode.Inst;
 import intermediateCode.optimize.RegAllocator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -106,6 +105,13 @@ public record AddInst(String result, String para1, String para2) implements Inst
         return new AddInst(Inst.transformParam(result, n, funcName),
                 Inst.transformParam(para1, n, funcName),
                 Inst.transformParam(para2, n, funcName));
+    }
+
+    @Override
+    public Inst replaceFor(int n) {
+        return new AddInst(Inst.transformFor(result, n),
+                Inst.transformFor(para1, n),
+                Inst.transformFor(para2, n));
     }
 
     @Override

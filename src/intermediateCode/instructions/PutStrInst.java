@@ -53,6 +53,11 @@ public record PutStrInst(String label) implements Inst {
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new PutStrInst(label);
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

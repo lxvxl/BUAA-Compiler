@@ -79,6 +79,13 @@ public record ModInst(String result, String para1, String para2) implements Inst
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new ModInst(Inst.transformFor(result, n),
+                Inst.transformFor(para1, n),
+                Inst.transformFor(para2, n));
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

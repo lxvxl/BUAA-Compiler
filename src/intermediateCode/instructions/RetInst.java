@@ -19,8 +19,8 @@ public record RetInst(String ret) implements Inst {
     @Override
     public void toMips() {
         MipsGenerator.addInst('#' + toString());
-        int num = num();
         if (CodeGenerator.OPTIMIZE) {
+            int num = num();
             if (ret != null) {
                 String resultReg = RegAllocator.getParamVal(ret, num);
                 MipsGenerator.addInst("\tmove $v0, " + resultReg);
@@ -64,6 +64,11 @@ public record RetInst(String ret) implements Inst {
     @Override
     public Inst replace(int n, String funcName) {
         return new RetInst(Inst.transformParam(ret, n, funcName));
+    }
+
+    @Override
+    public Inst replaceFor(int n) {
+        return new RetInst(Inst.transformFor(ret, n));
     }
 
     @Override

@@ -298,4 +298,8 @@ public class BasicBlock {
     public List<String> getNextBlock() {
         return nextBlock;
     }
+
+    public String getLabel() {
+        return label;
+    }
 }

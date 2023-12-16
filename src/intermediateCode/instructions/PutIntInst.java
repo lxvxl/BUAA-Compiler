@@ -63,6 +63,11 @@ public record PutIntInst(String n) implements Inst {
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new PutIntInst(Inst.transformFor(this.n, n));
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

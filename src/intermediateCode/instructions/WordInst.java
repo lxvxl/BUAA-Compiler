@@ -59,6 +59,11 @@ public record WordInst(String name, int size, List<String> initVals) implements 
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

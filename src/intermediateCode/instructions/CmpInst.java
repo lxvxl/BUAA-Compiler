@@ -216,6 +216,14 @@ public record CmpInst(String op, String result, String para1, String para2) impl
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new CmpInst(op,
+                Inst.transformFor(result, n),
+                Inst.transformFor(para1, n),
+                Inst.transformFor(para2, n));
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

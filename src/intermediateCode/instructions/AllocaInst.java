@@ -59,6 +59,11 @@ public record AllocaInst(String result, int size, boolean isArray) implements In
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

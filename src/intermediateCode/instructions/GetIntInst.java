@@ -61,6 +61,11 @@ public record GetIntInst(String result) implements Inst {
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new GetIntInst(Inst.transformFor(result, n));
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

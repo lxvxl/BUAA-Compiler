@@ -51,6 +51,11 @@ public record Label(String label) implements Inst {
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

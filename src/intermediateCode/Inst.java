@@ -14,6 +14,7 @@ public interface Inst {
     String getResult();
     int num();
     Inst replace(int n, String funcName);
+    Inst replaceFor(int n);
 
     static String getEquivalentReg(HashMap<String, String> regMap, String param) {
         while (regMap.containsKey(param) && param != null && !param.equals(regMap.get(param))) {
@@ -73,6 +74,14 @@ public interface Inst {
             return arrMap.get(arrName);
         } else {
             return transformParam(arrName, n, funcName);
+        }
+    }
+
+    static String transformFor(String param, int n) {
+        if (isTempParam(param)) {
+            return param + "@for" + n;
+        } else {
+            return param;
         }
     }
 }

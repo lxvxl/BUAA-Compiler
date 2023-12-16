@@ -65,6 +65,11 @@ public record BrInst(String reg, String trueLabel, String falseLabel) implements
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

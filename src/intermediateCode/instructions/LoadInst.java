@@ -105,6 +105,15 @@ public record LoadInst(String result, String addr, int offset, String arrName, b
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new LoadInst(Inst.transformFor(result, n),
+                Inst.transformFor(addr, n),
+                offset,
+                arrName,
+                isGlobalArea);
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

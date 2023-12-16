@@ -103,6 +103,15 @@ public record StoreInst(String val, String addr, int offset, String arrName, boo
     }
 
     @Override
+    public Inst replaceFor(int n) {
+        return new StoreInst(Inst.transformFor(val, n),
+                Inst.transformFor(addr, n),
+                offset,
+                arrName,
+                isGlobalArea);
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }
