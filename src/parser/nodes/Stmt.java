@@ -167,7 +167,7 @@ public class Stmt implements TreeNode {
             int line = lVal.changeable();
             if (line > 0) {
                 ErrorHandler.putError(line, 'h');
-                SyntaxChecker.loopOut();
+                //SyntaxChecker.loopOut();
                 return;
             }
             if (children.get(2) instanceof Exp exp) {
