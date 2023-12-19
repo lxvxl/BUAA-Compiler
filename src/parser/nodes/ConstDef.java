@@ -76,6 +76,14 @@ public class ConstDef implements TreeNode {
         } else {
             var = new Var(((Symbol)children.get(0)).symbol(), true, dim);
         }
+
+        try {
+            SymbolTable.addIdent(var);
+        } catch (RepeatDefException e) {
+            ErrorHandler.putError(((Symbol)children.get(0)).lineNum(), 'b');
+            return;
+        }
+
         int size = switch (dim) {
             case 0 -> 4;
             case 1 -> parseInt(results[0]) * 4;
@@ -106,12 +114,6 @@ public class ConstDef implements TreeNode {
                     CodeGenerator.addInst(new StoreInst(initVals.get(i), addrReg, 4 * i, addrReg, false));
                 }
             }
-        }
-
-        try {
-            SymbolTable.addIdent(var);
-        } catch (RepeatDefException e) {
-            ErrorHandler.putError(((Symbol)children.get(0)).lineNum(), 'b');
         }
     }
 }

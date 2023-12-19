@@ -257,18 +257,21 @@ public class Stmt implements TreeNode {
                 case BREAKTK -> {
                     if (!SyntaxChecker.isInLoop()) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'm');
+                        return;
                     }
                     CodeGenerator.addInst(new JumpInst(SyntaxChecker.getTailLabel()));
                 }
                 case CONTINUETK -> {
                     if (!SyntaxChecker.isInLoop()) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'm');
+                        return;
                     }
                     CodeGenerator.addInst(new JumpInst(SyntaxChecker.getHeadLabel()));
                 }
                 case RETURNTK -> {
                     if (SyntaxChecker.isReturnValid(children.size() == 3)) {
                         ErrorHandler.putError(firstSymbol.lineNum(), 'f');
+                        return;
                     }
                     if (children.size() == 3) {
                         children.get(1).compile();

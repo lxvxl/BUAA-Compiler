@@ -92,7 +92,7 @@ public class UnaryExp implements TreeNode {
             for (int i = 0; i < definedParams.size(); i++) {
                 if (definedParams.get(i).getDim() != rParams.get(i) && rParams.get(i) != -2) {
                     ErrorHandler.putError(ident.lineNum(), 'e');
-                    break;
+                    return;
                 }
             }
             List<String> params;

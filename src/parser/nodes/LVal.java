@@ -124,6 +124,10 @@ public class LVal implements TreeNode {
 
         Symbol ident = (Symbol)children.get(0);
         Var var = (Var) SymbolTable.searchIdent(ident.symbol());
+        if (var == null) {
+            ErrorHandler.putError(ident.lineNum(), 'c');
+            return;
+        }
         String addr = var.getAddrReg();
         String areaName = addr;
         boolean isGlobalArea = var.isPtr() || addr.charAt(0) == '@';

@@ -69,6 +69,7 @@ public class FuncFParam implements TreeNode {
             SymbolTable.addIdent(var);
         } catch (RepeatDefException e) {
             ErrorHandler.putError(((Symbol)children.get(1)).lineNum(), 'b');
+            return;
         }
         var.setAddrReg(CodeGenerator.generateReg() + '_' + var.getName());
         if (var.getDim() > 0) {

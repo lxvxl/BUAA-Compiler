@@ -54,7 +54,9 @@ public class MainFuncDef implements TreeNode {
     public void compile() {
         try {
             SymbolTable.addIdent(new Func("main", "int", new ArrayList<>()));
-        } catch (RepeatDefException ignored) {}
+        } catch (RepeatDefException ignored) {
+            ErrorHandler.putError(((Symbol)children.get(1)).lineNum(), 'b');
+        }
         Block block = (Block)children.get(4);
         if (!block.containReturn()) {
             ErrorHandler.putError(((Symbol)block.getChildren().get(block.getChildren().size() - 1)).lineNum(), 'g');

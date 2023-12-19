@@ -78,6 +78,13 @@ public class VarDef implements TreeNode {
             var = new Var(((Symbol)children.get(0)).symbol(), false, dim);
         }
 
+        try {
+            SymbolTable.addIdent(var);
+        } catch (RepeatDefException e) {
+            ErrorHandler.putError(((Symbol)children.get(0)).lineNum(), 'b');
+            return;
+        }
+
         int size = switch (dim) {
             case 0 -> 4;
             case 1 -> parseInt(results[0]) * 4;
@@ -117,12 +124,6 @@ public class VarDef implements TreeNode {
                     }
                 }
             }
-        }
-
-        try {
-            SymbolTable.addIdent(var);
-        } catch (RepeatDefException e) {
-            ErrorHandler.putError(((Symbol)children.get(0)).lineNum(), 'b');
         }
     }
 }

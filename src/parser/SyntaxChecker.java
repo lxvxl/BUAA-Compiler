@@ -14,7 +14,7 @@ public class SyntaxChecker {
     private static final List<String> loopHeads = new ArrayList<>();
     private static final List<String> loopTails = new ArrayList<>();
     private static String funcState = "out"; //out, void, int
-    private static String expReturnReg; //上一个类exp节点计算后结果的存储寄存器
+    private static String expReturnReg = "0"; //上一个类exp节点计算后结果的存储寄存器
 
     public static void addSemicnWithCheck(List<TreeNode> children, LexicalManager lm){
         try {
