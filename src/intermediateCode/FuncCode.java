@@ -24,7 +24,11 @@ public class FuncCode {
     public FuncCode(String name, List<Inst> insts) {
         this.name = name;
         this.insts = insts;
-        this.func = (Func) SymbolTable.searchIdent(name);
+        if (SymbolTable.searchIdent(name) instanceof Func func) {
+            this.func = func;
+        } else {
+            this.func = null;
+        }
     }
     public void optimize() {
         //初始化
