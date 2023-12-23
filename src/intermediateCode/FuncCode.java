@@ -15,7 +15,7 @@ public class FuncCode {
     private final String name;
     private List<Inst> insts;
     private final Func func;
-    private boolean inferable;//表示是否可以从参数推断出函数的返回值
+    private boolean inferable = false;//表示是否可以从参数推断出函数的返回值
 
     private boolean hasSideEffect;
 
@@ -78,7 +78,7 @@ public class FuncCode {
         insts.clear();
         basicBlocks.forEach(b -> insts.addAll(b.getInsts()));
         RegAllocator.allocateGlobalReg();
-        checkInferable();
+        //checkInferable();
         output();
         toMips2(basicBlocks);
     }

@@ -81,21 +81,6 @@ public class BasicBlock {
                 if (result.equals(val)) {
                     newInsts.add(newInst);
                 }
-                /*if (loadInst.addr().charAt(0) == '@') {
-                    newInsts.add(newInst);
-                    continue;
-                }
-                ParamAddr paramAddr = addrRecords.stream()
-                        .filter(p -> p.addr().equals(loadInst.addr()) && p.offset == loadInst.offset())
-                        .findFirst()
-                        .orElse(null);
-                if (paramAddr == null) {
-                    newInsts.add(newInst);
-                    regMap.put(newInst.getResult(), newInst.getResult());
-                    addrRecords.add(new ParamAddr(loadInst.addr(), loadInst.offset(), loadInst.result(), loadInst.isArray()));
-                } else {
-                    regMap.put(newInst.getResult(), paramAddr.storeReg);
-                }*/
             } else if (newInst instanceof StoreInst storeInst) {
                 //如果是全局类型的数组
                 if (storeInst.isGlobalArea() && storeInst.isArray()) {
@@ -110,17 +95,6 @@ public class BasicBlock {
                 }
                 memoryRecord.recordStore(storeInst);
                 newInsts.add(newInst);
-                /*if (storeInst.addr().charAt(0) == '@') {
-                    newInsts.add(newInst);
-                    continue;
-                }
-                newInsts.add(newInst);
-                if (storeInst.isArray()) {
-                    addrRecords.removeIf(e -> e.isArray);
-                } else {
-                    addrRecords.removeIf(e -> e.addr().equals(storeInst.addr()));
-                }
-                addrRecords.add(new ParamAddr(storeInst.addr(), storeInst.offset(), storeInst.val(), storeInst.isArray()));*/
             } else if (newInst instanceof CallInst callInst) {
                 String specificResult = callInst.getSpecificResult();
                 if (specificResult != null) {
