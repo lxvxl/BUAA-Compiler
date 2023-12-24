@@ -34,6 +34,8 @@ public class Stmt implements TreeNode {
     //| 'return' [Exp] ';'
     //| LVal '=' 'getint''('')'';'
     //| 'printf' '(' FormatString {','Exp} ')' ';'
+    //| 'while' '(' Cond ')' Stmt
+    //| 'do' Stmt 'while' '(' Cond ')' ';'
     public static Stmt parse(LexicalManager lm) throws ParsingFailedException {
         List<TreeNode> children = new ArrayList<>();
         lm.mark();
@@ -42,12 +44,13 @@ public class Stmt implements TreeNode {
             Logger.write("进入Stmt，当前symbol为" + lm.checkSymbol().toString());
             switch (lm.checkSymbol().type()) {
                 //Block
-                case LBRACE:
+                case LBRACE -> {
                     children.add(Block.parse(lm));
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'if' '(' Cond ')' Stmt [ 'else' Stmt ]
-                case IFTK:
+                case IFTK -> {
                     children.add(lm.getSymbolWithCategory(CategoryCode.IFTK));
                     children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
                     children.add(Cond.parse(lm));
@@ -59,50 +62,58 @@ public class Stmt implements TreeNode {
                     }
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-                case FORTK:
+                case FORTK -> {
                     children.add(lm.getSymbolWithCategory(CategoryCode.FORTK));
                     children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
                     try {
                         children.add(ForStmt.parse(lm));
-                    } catch (ParsingFailedException ignored) {}
+                    } catch (ParsingFailedException ignored) {
+                    }
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     try {
                         children.add(Cond.parse(lm));
-                    } catch (ParsingFailedException ignored) {}
+                    } catch (ParsingFailedException ignored) {
+                    }
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     try {
                         children.add(ForStmt.parse(lm));
-                    } catch (ParsingFailedException ignored) {}
+                    } catch (ParsingFailedException ignored) {
+                    }
                     SyntaxChecker.addRparentWithCheck(children, lm);
                     children.add(Stmt.parse(lm));
-
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'break' ';'
-                case BREAKTK:
+                case BREAKTK -> {
                     children.add(lm.getSymbolWithCategory(CategoryCode.BREAKTK));
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'continue' ';'
-                case CONTINUETK:
+                case CONTINUETK -> {
                     children.add(lm.getSymbolWithCategory(CategoryCode.CONTINUETK));
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'return' [Exp] ';'
-                case RETURNTK:
+                case RETURNTK -> {
                     //Logger.write("进入分支return");
                     children.add(lm.getSymbolWithCategory(CategoryCode.RETURNTK));
                     try {
                         children.add(Exp.parse(lm));
-                    } catch (ParsingFailedException ignored) {}
+                    } catch (ParsingFailedException ignored) {
+                    }
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 //'printf''('FormatString{','Exp}')'';'
-                case PRINTFTK:
+                case PRINTFTK -> {
                     children.add(lm.getSymbolWithCategory(CategoryCode.PRINTFTK));
                     children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
                     children.add(lm.getSymbolWithCategory(CategoryCode.STRCON));
@@ -112,18 +123,41 @@ public class Stmt implements TreeNode {
                     }
                     SyntaxChecker.addRparentWithCheck(children, lm);
                     SyntaxChecker.addSemicnWithCheck(children, lm);
-
                     lm.revokeMark();
                     return new Stmt(children);
+                }
                 // ';'
-                case SEMICN:
+                case SEMICN -> {
                     SyntaxChecker.addSemicnWithCheck(children, lm);
                     lm.revokeMark();
                     return new Stmt(children);
+                }
+                //'while' '(' Cond ')' Stmt
+                case WHILETK -> {
+                    children.add(lm.getSymbolWithCategory(CategoryCode.WHILETK));
+                    children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
+                    children.add(Cond.parse(lm));
+                    SyntaxChecker.addRparentWithCheck(children, lm);
+                    children.add(Stmt.parse(lm));
+                    lm.revokeMark();
+                    return new Stmt(children);
+                }
+                //'do' Stmt 'while' '(' Cond ')' ';'
+                case DOTK -> {
+                    children.add(lm.getSymbolWithCategory(CategoryCode.DOTK));
+                    children.add(Stmt.parse(lm));
+                    children.add(lm.getSymbolWithCategory(CategoryCode.WHILETK));
+                    children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
+                    children.add(Cond.parse(lm));
+                    SyntaxChecker.addRparentWithCheck(children, lm);
+                    SyntaxChecker.addSemicnWithCheck(children, lm);
+                    lm.revokeMark();
+                    return new Stmt(children);
+                }
                 //LVal '=' Exp ';'
                 //Exp ';'
                 //LVal '=' 'getint''('')'';'
-                default:
+                default -> {
                     //先尝试通过Exp的方式进行解析
                     lm.mark();
                     Exp exp = Exp.parse(lm);
@@ -151,6 +185,7 @@ public class Stmt implements TreeNode {
                     }
                     lm.revokeMark();
                     return new Stmt(children);
+                }
             }
         } catch (ParsingFailedException e) {
             lm.traceBack();
@@ -167,7 +202,6 @@ public class Stmt implements TreeNode {
             int line = lVal.changeable();
             if (line > 0) {
                 ErrorHandler.putError(line, 'h');
-                //SyntaxChecker.loopOut();
                 return;
             }
             if (children.get(2) instanceof Exp exp) {
@@ -298,6 +332,37 @@ public class Stmt implements TreeNode {
                     } else {
                         CodeGenerator.addInst(new Label(falseLabel));
                     }
+                }
+                case WHILETK -> {
+                    //'while' '(' Cond ')' Stmt
+                    String beginLabel = CodeGenerator.generateLabel();
+                    String bodyLabel = CodeGenerator.generateLabel();
+                    String endLabel = CodeGenerator.generateLabel();
+
+                    LOrExp.setLabel(bodyLabel, endLabel);
+                    CodeGenerator.addInst(new Label(beginLabel));
+                    children.get(2).compile();  //Cond
+                    CodeGenerator.addInst(new Label(bodyLabel));
+                    SyntaxChecker.loopIn(beginLabel, endLabel);
+                    children.get(4).compile();  //Stmt
+                    CodeGenerator.addInst(new JumpInst(beginLabel));
+                    CodeGenerator.addInst(new Label(endLabel));
+                    SyntaxChecker.loopOut();
+                }
+                case DOTK -> {
+                    //'do' Stmt 'while' '(' Cond ')' ';'
+                    String beginLabel = CodeGenerator.generateLabel();
+                    String checkLabel = CodeGenerator.generateLabel();
+                    String endLabel = CodeGenerator.generateLabel();
+
+                    CodeGenerator.addInst(new Label(beginLabel));
+                    SyntaxChecker.loopIn(checkLabel, endLabel);
+                    children.get(1).compile();
+                    CodeGenerator.addInst(new Label(checkLabel));
+                    LOrExp.setLabel(beginLabel, endLabel);
+                    children.get(4).compile();
+                    CodeGenerator.addInst(new Label(endLabel));
+                    SyntaxChecker.loopOut();
                 }
             }
         }

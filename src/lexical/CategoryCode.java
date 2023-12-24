@@ -39,5 +39,7 @@ public enum CategoryCode {
     RBRACK,
     LBRACE,
     RBRACE,
+    DOTK,
+    WHILETK,
     END;
 }

@@ -40,34 +40,23 @@ public class LexicalAnalyser {
             }
             reader.unGetChar();
             String word = token.toString();
-            switch (word) {
-                case "main":
-                    return new Symbol(word, CategoryCode.MAINTK, lineNum);
-                case "const":
-                    return new Symbol(word, CategoryCode.CONSTTK, lineNum);
-                case "int":
-                    return new Symbol(word, CategoryCode.INTTK, lineNum);
-                case "break":
-                    return new Symbol(word, CategoryCode.BREAKTK, lineNum);
-                case "continue":
-                    return new Symbol(word, CategoryCode.CONTINUETK, lineNum);
-                case "if":
-                    return new Symbol(word, CategoryCode.IFTK, lineNum);
-                case "else":
-                    return new Symbol(word, CategoryCode.ELSETK, lineNum);
-                case "for":
-                    return new Symbol(word, CategoryCode.FORTK, lineNum);
-                case "getint":
-                    return new Symbol(word, CategoryCode.GETINTTK, lineNum);
-                case "printf":
-                    return new Symbol(word, CategoryCode.PRINTFTK, lineNum);
-                case "return":
-                    return new Symbol(word, CategoryCode.RETURNTK, lineNum);
-                case "void":
-                    return new Symbol(word, CategoryCode.VOIDTK, lineNum);
-                default:
-                    return new Symbol(word, CategoryCode.IDENFR, lineNum);
-            }
+            return switch (word) {
+                case "main" -> new Symbol(word, CategoryCode.MAINTK, lineNum);
+                case "const" -> new Symbol(word, CategoryCode.CONSTTK, lineNum);
+                case "int" -> new Symbol(word, CategoryCode.INTTK, lineNum);
+                case "break" -> new Symbol(word, CategoryCode.BREAKTK, lineNum);
+                case "continue" -> new Symbol(word, CategoryCode.CONTINUETK, lineNum);
+                case "if" -> new Symbol(word, CategoryCode.IFTK, lineNum);
+                case "else" -> new Symbol(word, CategoryCode.ELSETK, lineNum);
+                case "for" -> new Symbol(word, CategoryCode.FORTK, lineNum);
+                case "getint" -> new Symbol(word, CategoryCode.GETINTTK, lineNum);
+                case "printf" -> new Symbol(word, CategoryCode.PRINTFTK, lineNum);
+                case "return" -> new Symbol(word, CategoryCode.RETURNTK, lineNum);
+                case "void" -> new Symbol(word, CategoryCode.VOIDTK, lineNum);
+                case "do" -> new Symbol(word, CategoryCode.DOTK, lineNum);
+                case "while" -> new Symbol(word, CategoryCode.WHILETK, lineNum);
+                default -> new Symbol(word, CategoryCode.IDENFR, lineNum);
+            };
         }
         if (Character.isDigit(c)) {
             while (Character.isDigit(c)) {
