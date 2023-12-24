@@ -29,7 +29,7 @@ public class UnaryExp implements TreeNode {
         this.children = children;
     }
 
-    //UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
+    //UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp | 'getint' '(' ')'
     public static UnaryExp parse(LexicalManager lm) throws ParsingFailedException {
         List<TreeNode> children = new ArrayList<>();
         lm.mark();
@@ -53,8 +53,13 @@ public class UnaryExp implements TreeNode {
                 //UnaryOp UnaryExp
                 children.add(UnaryOp.parse(lm));
                 children.add(UnaryExp.parse(lm));
+            } else if (lm.checkSymbol().type() == CategoryCode.GETINTTK) {
+                //'getint' '(' ')'
+                children.add(lm.getSymbolWithCategory(CategoryCode.GETINTTK));
+                children.add(lm.getSymbolWithCategory(CategoryCode.LPARENT));
+                SyntaxChecker.addRparentWithCheck(children, lm);
             } else {
-                //PrimaryExp
+                    //PrimaryExp
                 children.add(PrimaryExp.parse(lm));
             }
             lm.revokeMark();
@@ -69,8 +74,10 @@ public class UnaryExp implements TreeNode {
 
     @Override
     public void compile() {
-        //if UnaryExp → Ident '(' [FuncRParams] ')'
-        if (children.get(0) instanceof Symbol ident) {
+        if (children.get(0) instanceof Symbol getint && getint.type() == CategoryCode.GETINTTK) {
+            SyntaxChecker.setExpReturnReg(CodeGenerator.generateGetInt());
+        } else if (children.get(0) instanceof Symbol ident) {
+            //UnaryExp → Ident '(' [FuncRParams] ')'
             //查看函数是否已经定义
             Func func = (Func) SymbolTable.searchIdent(ident.symbol());
             if (func == null) {
