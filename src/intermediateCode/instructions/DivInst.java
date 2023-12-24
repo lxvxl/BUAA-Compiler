@@ -52,6 +52,10 @@ public record DivInst(String result, String para1, String para2) implements Inst
             return;
         } else if (divider > 0 && (divider & (divider - 1)) == 0) {
             int k = (int) Math.round(Math.log(divider) / Math.log(2));
+            if (k == 0) {
+                MipsGenerator.addInst(String.format("move %s, %s", resultReg, para1Reg));
+                return;
+            }
             MipsGenerator.addInst(String.format("\tsra $at, %s, %d", para1Reg, k - 1));
             MipsGenerator.addInst(String.format("\tsrl $at, $at, %d", 32 - k));
             MipsGenerator.addInst(String.format("\taddu %s, %s, $at", resultReg, para1Reg));
